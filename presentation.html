@@ -1,0 +1,1050 @@
+<title>fabric — an agentic development demo</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --bg: #0b0e14;
+    --bg-raised: #12161f;
+    --fg: #e8ebf2;
+    --fg-dim: #9aa3b5;
+    --l1: #7fa8e0;
+    --l2: #7dd3c0;
+    --l3: #e8b86d;
+    --red: #e08585;
+    --border: #232838;
+    --code-bg: #0e1219;
+    --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f7f8fb;
+      --bg-raised: #ffffff;
+      --fg: #1b1f2a;
+      --fg-dim: #5a6272;
+      --l1: #2f5fa8;
+      --l2: #0f8a72;
+      --l3: #a8631a;
+      --red: #b23a3a;
+      --border: #dfe3ec;
+      --code-bg: #eef0f5;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.5;
+  }
+
+  section.slide {
+    min-height: 100vh;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 6vh 8vw;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .kicker {
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 0.78rem;
+    color: var(--l2);
+    font-weight: 600;
+    margin-bottom: 0.9rem;
+  }
+
+  h1 {
+    font-size: clamp(2.2rem, 5vw, 3.6rem);
+    margin: 0 0 0.4em 0;
+    line-height: 1.1;
+  }
+
+  h2 {
+    font-size: clamp(1.6rem, 3.4vw, 2.4rem);
+    margin: 0 0 0.7em 0;
+    line-height: 1.2;
+  }
+
+  h3 { font-size: 1.15rem; margin: 0 0 0.5em 0; }
+
+  p.lede {
+    font-size: clamp(1.05rem, 1.6vw, 1.35rem);
+    color: var(--fg-dim);
+    max-width: 66ch;
+  }
+
+  .talk-points {
+    list-style: none;
+    margin: 0.5em 0 0 0;
+    padding: 0;
+    max-width: 72ch;
+  }
+
+  .talk-points li {
+    padding: 0.55em 0 0.55em 1.6em;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    font-size: clamp(1rem, 1.5vw, 1.2rem);
+  }
+
+  .talk-points li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: var(--l2);
+  }
+
+  .talk-points li:last-child { border-bottom: none; }
+
+  /* --- spine table (slide 2) --- */
+  .spine-table {
+    border-collapse: collapse;
+    margin-top: 1rem;
+    max-width: 90ch;
+    font-size: 0.95rem;
+  }
+
+  .spine-table th, .spine-table td {
+    border: 1px solid var(--border);
+    padding: 0.7em 1em;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .spine-table th {
+    color: var(--fg-dim);
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .spine-table td.level-name { font-weight: 700; white-space: nowrap; }
+  .row-l1 td.level-name { color: var(--l1); }
+  .row-l2 td.level-name { color: var(--l2); }
+  .row-l3 td.level-name { color: var(--l3); }
+
+  /* --- level badge / card --- */
+  .level-card {
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--l2);
+    background: var(--bg-raised);
+    border-radius: 8px;
+    padding: 1.1rem 1.4rem;
+    max-width: 78ch;
+    margin-top: 1rem;
+  }
+
+  .level-card.l1 { border-left-color: var(--l1); }
+  .level-card.l2 { border-left-color: var(--l2); }
+  .level-card.l3 { border-left-color: var(--l3); }
+
+  .level-card .role {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--fg-dim);
+  }
+
+  .stat-row {
+    display: flex;
+    gap: 1.2rem;
+    flex-wrap: wrap;
+    margin: 1rem 0 1.2rem 0;
+  }
+
+  .stat {
+    border: 1px solid var(--border);
+    background: var(--bg-raised);
+    border-radius: 8px;
+    padding: 0.85rem 1.2rem;
+    min-width: 140px;
+  }
+
+  .stat .n { font-size: 1.7rem; font-weight: 700; font-family: var(--mono); }
+  .stat .label { color: var(--fg-dim); font-size: 0.8rem; margin-top: 0.2em; }
+  .stat.l1 .n { color: var(--l1); }
+  .stat.l2 .n { color: var(--l2); }
+  .stat.warn .n { color: var(--red); }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: 1rem;
+  }
+
+  @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+  .spec-box {
+    background: var(--bg-raised);
+    border: 1px dashed var(--l2);
+    border-radius: 8px;
+    padding: 1rem 1.3rem;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--fg-dim);
+    white-space: pre-wrap;
+    max-width: 72ch;
+  }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    overflow: auto;
+    font-family: var(--mono);
+    font-size: 0.76rem;
+    line-height: 1.5;
+    max-height: 54vh;
+  }
+
+  code { font-family: var(--mono); }
+
+  /* --- hinge slide --- */
+  .hinge-wrap {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    max-width: 92ch;
+    margin-top: 1.2rem;
+  }
+
+  .hinge-side {
+    flex: 1;
+    border: 1px solid var(--border);
+    background: var(--bg-raised);
+    padding: 1.2rem 1.4rem;
+  }
+
+  .hinge-side.left { border-radius: 8px 0 0 8px; border-right: none; }
+  .hinge-side.right {
+    border-radius: 0 8px 8px 0;
+    border-left: 2px dashed var(--l3);
+    background: rgba(232, 184, 109, 0.06);
+  }
+
+  .hinge-side h3 { margin-bottom: 0.3em; }
+  .hinge-side p { color: var(--fg-dim); margin: 0.2em 0; }
+  .hinge-side .tag {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+  }
+
+  .hinge-pivot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.4rem;
+    font-size: 1.6rem;
+    color: var(--l3);
+    background: var(--bg-raised);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .table-wrap {
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    max-height: 56vh;
+  }
+
+  table.talent-table {
+    border-collapse: collapse;
+    width: 100%;
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    white-space: nowrap;
+  }
+
+  table.talent-table th, table.talent-table td {
+    padding: 0.4em 0.7em;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+  }
+
+  table.talent-table thead th {
+    position: sticky;
+    top: 0;
+    background: var(--bg-raised);
+    color: var(--l2);
+    z-index: 1;
+  }
+
+  table.talent-table tr.unmatched td { color: var(--red); }
+  table.talent-table tr.unmatched td:nth-child(9),
+  table.talent-table tr.unmatched td:nth-child(10),
+  table.talent-table tr.unmatched td:nth-child(11) { opacity: 0.55; }
+
+  .mismatch-list {
+    font-family: var(--mono);
+    font-size: 0.88rem;
+    color: var(--fg-dim);
+    margin: 0.6rem 0 0 0;
+  }
+
+  .mismatch-list .pair { display: block; padding: 0.2em 0; }
+  .mismatch-list .pair .a { color: var(--red); }
+  .mismatch-list .pair .b { color: var(--l3); }
+
+  .callout {
+    border: 1px solid var(--l3);
+    background: var(--bg-raised);
+    border-radius: 8px;
+    padding: 1.1rem 1.4rem;
+    max-width: 78ch;
+    margin-top: 1.1rem;
+  }
+
+  .callout.governance { border-color: var(--red); }
+
+  .callout .flag {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--l3);
+    display: block;
+    margin-bottom: 0.5em;
+  }
+
+  .callout.governance .flag { color: var(--red); }
+  .callout p { margin: 0.3em 0; color: var(--fg); }
+
+  .footer-note {
+    position: absolute;
+    bottom: 1.4rem;
+    left: 8vw;
+    font-size: 0.78rem;
+    color: var(--fg-dim);
+    font-family: var(--mono);
+  }
+
+  nav#progress {
+    position: fixed;
+    right: 1.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    z-index: 10;
+  }
+
+  nav#progress button {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    border: 1px solid var(--fg-dim);
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  nav#progress button.active { background: var(--l2); border-color: var(--l2); }
+
+  .slide-index {
+    position: fixed;
+    left: 1.2rem;
+    bottom: 1.2rem;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--fg-dim);
+    z-index: 10;
+  }
+
+  .hint {
+    position: fixed;
+    left: 1.2rem;
+    top: 1.2rem;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--fg-dim);
+    z-index: 10;
+  }
+</style>
+
+<nav id="progress" aria-label="Slide navigation"></nav>
+<div class="slide-index" id="slide-index">1 / 8</div>
+<div class="hint">↑ ↓ / space / click dots to navigate</div>
+
+<section class="slide" id="s1">
+  <div class="kicker">A talk about agentic development</div>
+  <h1>fabric</h1>
+  <p class="lede">
+    Recruiting data as the vehicle. Three levels of what an LLM can be
+    asked to do as the subject. Same dataset, three artifacts, one
+    through-line: at each level, you hand over one more thing.
+  </p>
+  <div class="footer-note">Synthetic data only — built to illustrate a concept for a talk.</div>
+</section>
+
+<section class="slide" id="s2">
+  <div class="kicker">The spine of this talk</div>
+  <h2>Three levels. One more thing handed over at each.</h2>
+  <table class="spine-table">
+    <thead>
+      <tr><th>Level</th><th>Role</th><th>Handed over</th><th>Human still does</th></tr>
+    </thead>
+    <tbody>
+      <tr class="row-l1">
+        <td class="level-name">1 — Analyst</td>
+        <td>reasons over data you bring it</td>
+        <td>analysis</td>
+        <td>pulls the data, reads the answer, decides</td>
+      </tr>
+      <tr class="row-l2">
+        <td class="level-name">2 — Author</td>
+        <td>writes code from a spec</td>
+        <td>the code-writing</td>
+        <td>runs the tool, feeds files, debugs errors</td>
+      </tr>
+      <tr class="row-l3">
+        <td class="level-name">3 — Agent</td>
+        <td>writes <em>and runs</em> code, local access</td>
+        <td>the doing</td>
+        <td>describes intent, verifies output</td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="arrow-note" style="color:var(--l3); font-family:var(--mono); margin-top:1rem;">
+    Same dataset runs through all three. Watch what moves off the human's plate.
+  </p>
+</section>
+
+<section class="slide" id="s3">
+  <div class="kicker">Level 1</div>
+  <h2>Analyst — reasons over data you bring it</h2>
+  <div class="level-card l1">
+    <span class="role">nothing executes</span>
+    <p class="lede" style="margin:0.5em 0 0 0">
+      A pipeline export — <code>candidates.xlsx</code> — pasted into a chat.
+      The model reads it and reasons back. It never touches a filesystem,
+      never runs a query. The human already did all the surrounding work:
+      pulled the data, opened the model, and will still have to decide
+      what to do with the answer.
+    </p>
+  </div>
+  <div class="stat-row">
+    <div class="stat l1"><div class="n">11 / 25</div><div class="label">candidates still in Applied</div></div>
+    <div class="stat l1"><div class="n">2 / 25</div><div class="label">candidates at Offer</div></div>
+    <div class="stat warn"><div class="n">J007</div><div class="label">req "On Hold" — still has active candidates</div></div>
+  </div>
+  <p class="lede">
+    Real observations from <code>level1-analyst/analysis.md</code> — the
+    funnel is front-loaded, no Engineering offers yet, and one paused req
+    still has people moving through it. All reasoning. No action.
+  </p>
+</section>
+
+<section class="slide" id="s4">
+  <div class="kicker">Level 2</div>
+  <h2>Author — writes the tool. You're still the runtime.</h2>
+  <p class="lede" style="margin-bottom:0.3em">
+    Same chat window, same model as Level 1 — the only thing that changed
+    is what was asked <em>for</em>. This is prepared work, not a live run:
+    the spec below is what produced <code>merge.py</code>, shown in full underneath it.
+  </p>
+  <div class="two-col">
+    <div>
+      <h3>The spec</h3>
+      <div class="spec-box">Take these two CSVs and this SQLite table
+and:
+- load jobs.csv and candidates.csv with pandas
+- query enrichment.db with a SQL SELECT against
+  the profiles table
+- join jobs -&gt; candidates -&gt; profiles into one
+  row per candidate
+- don't silently drop mismatches: compute and
+  print how many candidates matched a profile,
+  how many didn't, and how many profiles went
+  unused
+- write the merged view out as BOTH an HTML file
+  and an Excel file</div>
+    </div>
+    <div>
+      <h3>The result — merge.py</h3>
+      <pre><code>"""
+merge.py
+--------
+Level 2 - Author. Reads three shared sources - two flat
+files and a SQLite database - and produces one merged
+view, written out as both HTML and Excel.
+
+    ../jobs.csv       -> pandas  (exported report)
+    ../candidates.csv -> pandas  (exported report)
+    ../enrichment.db   -> SQL     (a live system)
+"""
+
+import sqlite3
+from pathlib import Path
+import pandas as pd
+
+HERE = Path(__file__).parent
+ROOT = HERE.parent
+
+# 1. Load the two exported reports with pandas.
+jobs = pd.read_csv(ROOT / "jobs.csv")
+candidates = pd.read_csv(ROOT / "candidates.csv")
+
+# 2. Query the live system with a real SQL SELECT.
+SELECT_PROFILES_SQL = """
+    SELECT profile_id, name, current_title,
+           current_company, years_experience
+    FROM profiles
+"""
+conn = sqlite3.connect(ROOT / "enrichment.db")
+profiles = pd.read_sql_query(SELECT_PROFILES_SQL, conn)
+conn.close()
+
+# 3. jobs -> candidates: a clean merge on job_id.
+candidates_with_jobs = candidates.merge(
+    jobs, on="job_id", how="left", suffixes=("", "_job")
+)
+
+# 4. candidates -> profiles on full name - the messy
+#    half. A naive exact-name join surfaces every
+#    mismatch instead of hiding it.
+merged = candidates_with_jobs.merge(
+    profiles, left_on="full_name", right_on="name",
+    how="left", suffixes=("", "_profile")
+)
+
+# 5. Reconciliation summary - compute it, don't
+#    assume it.
+matched = merged[merged["name"].notna()]
+unmatched = merged[merged["name"].isna()]
+matched_ids = set(matched["profile_id"])
+unused = profiles[~profiles["profile_id"].isin(matched_ids)]
+
+print(f"Matched: {len(matched)}  "
+      f"Unmatched: {len(unmatched)}  "
+      f"Unused profiles: {len(unused)}")
+
+# 6. Write the merged view out as HTML and Excel.
+talent_view = merged[[
+    "candidate_id", "full_name", "email", "job_id",
+    "title", "department", "location", "stage",
+    "current_title", "current_company",
+    "years_experience",
+]].rename(columns={"title": "job_title"})
+
+talent_view.to_html(HERE / "merged.html", index=False)
+talent_view.to_excel(HERE / "merged.xlsx", index=False)</code></pre>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="s5">
+  <div class="kicker">The hinge</div>
+  <h2>Levels 1 and 2 are a request. Level 3 is access.</h2>
+  <div class="hinge-wrap">
+    <div class="hinge-side left">
+      <span class="tag">Levels 1 &amp; 2</span>
+      <h3 style="color:var(--l2)">Same chat. Same model.</h3>
+      <p>You ask for an answer, or you ask for a tool. Either way, the
+        model lives in a chat window. It reasons or it writes — but
+        <em>you</em> execute, you move files, you press run.</p>
+    </div>
+    <div class="hinge-pivot">→</div>
+    <div class="hinge-side right">
+      <span class="tag" style="color:var(--l3)">Level 3</span>
+      <h3 style="color:var(--l3)">The model gets access.</h3>
+      <p>Not a smarter model — a model that now lives in your environment,
+        via a CLI or its parent app. It reaches into the filesystem, runs
+        what it writes, iterates on its own errors, calls out to services.</p>
+    </div>
+  </div>
+  <p class="lede" style="margin-top:1.2rem">
+    That's the chapter break of this talk: not a capability jump, an
+    <strong>access</strong> jump.
+  </p>
+</section>
+
+<section class="slide" id="s6">
+  <div class="kicker">Level 3</div>
+  <h2>Agent — writes and runs, iterates, calls out</h2>
+  <div class="level-card l3">
+    <span class="role">local access</span>
+    <p class="lede" style="margin:0.5em 0 0 0">
+      A Level 3 agent reaches the exact same merged outcome as
+      <code>level2-author/merge.py</code> — but nobody exports a file or
+      runs a script by hand. It goes one step further, too: instead of
+      waiting on <code>jobs.csv</code>/<code>candidates.csv</code> to be
+      exported at all, it reads the source system's <strong>WSDL</strong>
+      and calls the <strong>SOAP endpoint directly</strong>, then runs the
+      whole pipeline itself. See <code>level3-agent/bonus-direct-wsdl.md</code>.
+    </p>
+  </div>
+  <ul class="talk-points">
+    <li>Same destination as Level 2 — the merged talent view — reached with the human removed from the loop.</li>
+    <li>Writing real integration code (auth, pagination, request envelopes) most humans wouldn't hand-write.</li>
+    <li>The human's job collapses to two things: describe intent, verify output.</li>
+  </ul>
+</section>
+
+<section class="slide" id="s7">
+  <div class="kicker">The payoff</div>
+  <h2>One merged talent view — and the reconciliation reality</h2>
+  <div class="stat-row">
+    <div class="stat"><div class="n" style="color:var(--l2)">19</div><div class="label">matched to a profile</div></div>
+    <div class="stat warn"><div class="n">6</div><div class="label">no matching profile</div></div>
+    <div class="stat"><div class="n" style="color:var(--l3)">5</div><div class="label">profiles unused</div></div>
+  </div>
+  <div class="mismatch-list">
+    <span class="pair"><span class="a">Jon Smith</span> (candidate) vs <span class="b">Jonathan Smith</span> (profile)</span>
+    <span class="pair"><span class="a">Cate Nguyen</span> (candidate) vs <span class="b">Catherine Nguyen</span> (profile)</span>
+    <span class="pair"><span class="a">Rob Diaz</span> (candidate) vs <span class="b">Robert Diaz</span> (profile)</span>
+  </div>
+  <p class="lede" style="margin:0.8rem 0">
+    The join isn't automatic. An exact-name match won't catch those three
+    pairs, and it shouldn't guess — that trade-off is a judgment call the
+    human makes, not the agent. Rows in red below have no matching profile.
+  </p>
+  <div class="table-wrap">
+    <table class="talent-table">
+      <thead>
+        <tr>
+          <th>candidate_id</th><th>full_name</th><th>email</th><th>job_id</th>
+          <th>job_title</th><th>department</th><th>location</th><th>stage</th>
+          <th>current_title</th><th>current_company</th><th>years_experience</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>C001</td>
+          <td>Avery Example</td>
+          <td>avery.example@example.com</td>
+          <td>J001</td>
+          <td>Software Engineer</td>
+          <td>Engineering</td>
+          <td>Remote</td>
+          <td>Applied</td>
+          <td>Software Engineer II</td>
+          <td>Acme Corp</td>
+          <td>4.0</td>
+        </tr>
+        <tr>
+          <td>C002</td>
+          <td>Jordan Sample</td>
+          <td>jordan.sample@example.com</td>
+          <td>J001</td>
+          <td>Software Engineer</td>
+          <td>Engineering</td>
+          <td>Remote</td>
+          <td>Screen</td>
+          <td>Senior Product Analyst</td>
+          <td>Globex</td>
+          <td>6.0</td>
+        </tr>
+        <tr class="unmatched">
+          <td>C003</td>
+          <td>Jon Smith</td>
+          <td>jon.smith@example.com</td>
+          <td>J001</td>
+          <td>Software Engineer</td>
+          <td>Engineering</td>
+          <td>Remote</td>
+          <td>Interview</td>
+          <td>&ndash;</td>
+          <td>&ndash;</td>
+          <td>&ndash;</td>
+        </tr>
+        <tr>
+          <td>C004</td>
+          <td>Casey Test</td>
+          <td>casey.test@example.com</td>
+          <td>J002</td>
+          <td>Product Manager</td>
+          <td>Product</td>
+          <td>Austin, TX</td>
+          <td>Applied</td>
+          <td>Product Manager</td>
+          <td>Acme Corp</td>
+          <td>7.0</td>
+        </tr>
+        <tr>
+          <td>C005</td>
+          <td>Riley Demo</td>
+          <td>riley.demo@example.com</td>
+          <td>J002</td>
+          <td>Product Manager</td>
+          <td>Product</td>
+          <td>Austin, TX</td>
+          <td>Screen</td>
+          <td>Associate Product Manager</td>
+          <td>Globex</td>
+          <td>3.0</td>
+        </tr>
+        <tr>
+          <td>C006</td>
+          <td>Morgan Fake</td>
+          <td>morgan.fake@example.com</td>
+          <td>J002</td>
+          <td>Product Manager</td>
+          <td>Product</td>
+          <td>Austin, TX</td>
+          <td>Offer</td>
+          <td>Senior Product Manager</td>
+          <td>Initech</td>
+          <td>8.0</td>
+        </tr>
+        <tr class="unmatched">
+          <td>C007</td>
+          <td>Cate Nguyen</td>
+          <td>cate.nguyen@example.com</td>
+          <td>J003</td>
+          <td>Data Analyst</td>
+          <td>Analytics</td>
+          <td>Remote</td>
+          <td>Applied</td>
+          <td>&ndash;</td>
+          <td>&ndash;</td>
+          <td>&ndash;</td>
+        </tr>
+        <tr>
+          <td>C008</td>
+          <td>Drew Placeholder</td>
+          <td>drew.placeholder@example.com</td>
+          <td>J003</td>
+          <td>Data Analyst</td>
+          <td>Analytics</td>
+          <td>Remote</td>
+          <td>Screen</td>
+          <td>Business Intelligence Analyst</td>
+          <td>Globex</td>
+          <td>5.0</td>
+        </tr>
+        <tr>
+          <td>C009</td>
+          <td>Sam Synthetic</td>
+          <td>sam.synthetic@example.com</td>
+          <td>J003</td>
+          <td>Data Analyst</td>
+          <td>Analytics</td>
+          <td>Remote</td>
+          <td>Interview</td>
+          <td>Data Analyst II</td>
+          <td>Initech</td>
+          <td>3.0</td>
+        </tr>
+        <tr>
+          <td>C010</td>
+          <td>Taylor Mock</td>
+          <td>taylor.mock@example.com</td>
+          <td>J004</td>
+          <td>Recruiter</td>
+          <td>People</td>
+          <td>Chicago, IL</td>
+          <td>Applied</td>
+          <td>Technical Recruiter</td>
+          <td>Acme Corp</td>
+          <td>6.0</td>
+        </tr>
+        <tr class="unmatched">
+          <td>C011</td>
+          <td>Rob Diaz</td>
+          <td>rob.diaz@example.com</td>
+          <td>J004</td>
+          <td>Recruiter</td>
+          <td>People</td>
+          <td>Chicago, IL</td>
+          <td>Screen</td>
+          <td>&ndash;</td>
+          <td>&ndash;</td>
+          <td>&ndash;</td>
+        </tr>
+        <tr>
+          <td>C012</td>
+          <td>Jamie Sample</td>
+          <td>jamie.sample@example.com</td>
+          <td>J004</td>
+          <td>Recruiter</td>
+          <td>People</td>
+          <td>Chicago, IL</td>
+          <td>Applied</td>
+          <td>Recruiting Coordinator</td>
+          <td>Initech</td>
+          <td>2.0</td>
+        </tr>
+        <tr>
+          <td>C013</td>
+          <td>Quinn Example</td>
+          <td>quinn.example@example.com</td>
+          <td>J005</td>
+          <td>UX Designer</td>
+          <td>Design</td>
+          <td>Remote</td>
+          <td>Interview</td>
+          <td>Senior UX Designer</td>
+          <td>Acme Corp</td>
+          <td>7.0</td>
+        </tr>
+        <tr>
+          <td>C014</td>
+          <td>Alex Test</td>
+          <td>alex.test@example.com</td>
+          <td>J005</td>
+          <td>UX Designer</td>
+          <td>Design</td>
+          <td>Remote</td>
+          <td>Applied</td>
+          <td>UX Designer</td>
+          <td>Globex</td>
+          <td>3.0</td>
+        </tr>
+        <tr>
+          <td>C015</td>
+          <td>Bailey Demo</td>
+          <td>bailey.demo@example.com</td>
+          <td>J005</td>
+          <td>UX Designer</td>
+          <td>Design</td>
+          <td>Remote</td>
+          <td>Offer</td>
+          <td>Product Designer</td>
+          <td>Initech</td>
+          <td>5.0</td>
+        </tr>
+        <tr>
+          <td>C016</td>
+          <td>Skyler Fake</td>
+          <td>skyler.fake@example.com</td>
+          <td>J006</td>
+          <td>Sales Development Rep</td>
+          <td>Sales</td>
+          <td>New York, NY</td>
+          <td>Applied</td>
+          <td>Sales Development Rep</td>
+          <td>Acme Corp</td>
+          <td>2.0</td>
+        </tr>
+        <tr>
+          <td>C017</td>
+          <td>Reese Placeholder</td>
+          <td>reese.placeholder@example.com</td>
+          <td>J006</td>
+          <td>Sales Development Rep</td>
+          <td>Sales</td>
+          <td>New York, NY</td>
+          <td>Screen</td>
+          <td>Account Executive</td>
+          <td>Globex</td>
+          <td>4.0</td>
+        </tr>
+        <tr>
+          <td>C018</td>
+          <td>Harper Synthetic</td>
+          <td>harper.synthetic@example.com</td>
+          <td>J006</td>
+          <td>Sales Development Rep</td>
+          <td>Sales</td>
+          <td>New York, NY</td>
+          <td>Applied</td>
+          <td>Sales Development Rep</td>
+          <td>Initech</td>
+          <td>3.0</td>
+        </tr>
+        <tr>
+          <td>C019</td>
+          <td>Emerson Mock</td>
+          <td>emerson.mock@example.com</td>
+          <td>J007</td>
+          <td>DevOps Engineer</td>
+          <td>Engineering</td>
+          <td>Remote</td>
+          <td>Screen</td>
+          <td>DevOps Engineer</td>
+          <td>Initech</td>
+          <td>6.0</td>
+        </tr>
+        <tr>
+          <td>C020</td>
+          <td>Finley Sample</td>
+          <td>finley.sample@example.com</td>
+          <td>J007</td>
+          <td>DevOps Engineer</td>
+          <td>Engineering</td>
+          <td>Remote</td>
+          <td>Interview</td>
+          <td>Site Reliability Engineer</td>
+          <td>Acme Corp</td>
+          <td>5.0</td>
+        </tr>
+        <tr>
+          <td>C021</td>
+          <td>Dana Example</td>
+          <td>dana.example@example.com</td>
+          <td>J008</td>
+          <td>Customer Success Manager</td>
+          <td>Customer Success</td>
+          <td>Austin, TX</td>
+          <td>Applied</td>
+          <td>Customer Success Manager</td>
+          <td>Acme Corp</td>
+          <td>5.0</td>
+        </tr>
+        <tr>
+          <td>C022</td>
+          <td>Micah Test</td>
+          <td>micah.test@example.com</td>
+          <td>J008</td>
+          <td>Customer Success Manager</td>
+          <td>Customer Success</td>
+          <td>Austin, TX</td>
+          <td>Screen</td>
+          <td>Customer Success Associate</td>
+          <td>Globex</td>
+          <td>2.0</td>
+        </tr>
+        <tr class="unmatched">
+          <td>C023</td>
+          <td>Jess Nolan</td>
+          <td>jess.nolan@example.com</td>
+          <td>J008</td>
+          <td>Customer Success Manager</td>
+          <td>Customer Success</td>
+          <td>Austin, TX</td>
+          <td>Applied</td>
+          <td>&ndash;</td>
+          <td>&ndash;</td>
+          <td>&ndash;</td>
+        </tr>
+        <tr class="unmatched">
+          <td>C024</td>
+          <td>Toby Grant</td>
+          <td>toby.grant@example.com</td>
+          <td>J002</td>
+          <td>Product Manager</td>
+          <td>Product</td>
+          <td>Austin, TX</td>
+          <td>Applied</td>
+          <td>&ndash;</td>
+          <td>&ndash;</td>
+          <td>&ndash;</td>
+        </tr>
+        <tr class="unmatched">
+          <td>C025</td>
+          <td>Wynn Osei</td>
+          <td>wynn.osei@example.com</td>
+          <td>J003</td>
+          <td>Data Analyst</td>
+          <td>Analytics</td>
+          <td>Remote</td>
+          <td>Screen</td>
+          <td>&ndash;</td>
+          <td>&ndash;</td>
+          <td>&ndash;</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="slide" id="s8">
+  <div class="kicker">Takeaway</div>
+  <h2>What moved, level by level — and where to watch it</h2>
+  <ul class="talk-points">
+    <li>Level 1: the model reasons. Level 2: the model writes the tool. Level 3: the model writes <em>and runs</em> it.</li>
+    <li>The chapter break wasn't a smarter model — it was access. That's why Level 3 needs governance and Levels 1–2 don't.</li>
+    <li>At Level 1 you judge the analysis. At Level 2 you read the code before running it. At Level 3, the agent has already acted before you get to check.</li>
+  </ul>
+  <div class="callout governance">
+    <span class="flag">Governance — Level 3 only</span>
+    <p>
+      Auto-moving data between systems is exactly the kind of data-movement
+      pattern an admin must control: scoped access, an audit trail, a human
+      sign-off on what's allowed to move where. This is the cost of the
+      autonomy Level 3 buys you.
+    </p>
+  </div>
+  <div class="callout">
+    <span class="flag">The deeper win</span>
+    <p>
+      The real agentic-development payoff goes one step further than
+      anything shown so far: an agent that reads a source system's
+      <strong>WSDL</strong> and calls its <strong>SOAP endpoint directly</strong> —
+      skipping the export step entirely, building real integration code a
+      human wouldn't hand-write. See
+      <code>level3-agent/bonus-direct-wsdl.md</code>.
+    </p>
+  </div>
+</section>
+
+<script>
+  (function () {
+    var slides = Array.prototype.slice.call(document.querySelectorAll("section.slide"));
+    var progress = document.getElementById("progress");
+    var indexEl = document.getElementById("slide-index");
+
+    slides.forEach(function (slide, i) {
+      var dot = document.createElement("button");
+      dot.setAttribute("aria-label", "Go to slide " + (i + 1));
+      dot.addEventListener("click", function () {
+        slide.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+      progress.appendChild(dot);
+    });
+
+    var dots = Array.prototype.slice.call(progress.children);
+
+    function currentIndex() {
+      var mid = window.scrollY + window.innerHeight / 2;
+      var best = 0;
+      var bestDist = Infinity;
+      slides.forEach(function (slide, i) {
+        var top = slide.offsetTop + slide.offsetHeight / 2;
+        var dist = Math.abs(top - mid);
+        if (dist < bestDist) {
+          bestDist = dist;
+          best = i;
+        }
+      });
+      return best;
+    }
+
+    function updateActive() {
+      var i = currentIndex();
+      dots.forEach(function (d, di) {
+        d.classList.toggle("active", di === i);
+      });
+      indexEl.textContent = (i + 1) + " / " + slides.length;
+    }
+
+    window.addEventListener("scroll", updateActive, { passive: true });
+    updateActive();
+
+    document.addEventListener("keydown", function (e) {
+      var i = currentIndex();
+      if (e.key === "ArrowDown" || e.key === "PageDown" || e.key === " ") {
+        e.preventDefault();
+        var next = slides[Math.min(i + 1, slides.length - 1)];
+        next.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else if (e.key === "ArrowUp" || e.key === "PageUp") {
+        e.preventDefault();
+        var prev = slides[Math.max(i - 1, 0)];
+        prev.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else if (e.key === "Home") {
+        slides[0].scrollIntoView({ behavior: "smooth", block: "start" });
+      } else if (e.key === "End") {
+        slides[slides.length - 1].scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  })();
+</script>

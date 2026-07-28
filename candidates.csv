@@ -1,0 +1,26 @@
+candidate_id,full_name,email,job_id,stage
+C001,Avery Example,avery.example@example.com,J001,Applied
+C002,Jordan Sample,jordan.sample@example.com,J001,Screen
+C003,Jon Smith,jon.smith@example.com,J001,Interview
+C004,Casey Test,casey.test@example.com,J002,Applied
+C005,Riley Demo,riley.demo@example.com,J002,Screen
+C006,Morgan Fake,morgan.fake@example.com,J002,Offer
+C007,Cate Nguyen,cate.nguyen@example.com,J003,Applied
+C008,Drew Placeholder,drew.placeholder@example.com,J003,Screen
+C009,Sam Synthetic,sam.synthetic@example.com,J003,Interview
+C010,Taylor Mock,taylor.mock@example.com,J004,Applied
+C011,Rob Diaz,rob.diaz@example.com,J004,Screen
+C012,Jamie Sample,jamie.sample@example.com,J004,Applied
+C013,Quinn Example,quinn.example@example.com,J005,Interview
+C014,Alex Test,alex.test@example.com,J005,Applied
+C015,Bailey Demo,bailey.demo@example.com,J005,Offer
+C016,Skyler Fake,skyler.fake@example.com,J006,Applied
+C017,Reese Placeholder,reese.placeholder@example.com,J006,Screen
+C018,Harper Synthetic,harper.synthetic@example.com,J006,Applied
+C019,Emerson Mock,emerson.mock@example.com,J007,Screen
+C020,Finley Sample,finley.sample@example.com,J007,Interview
+C021,Dana Example,dana.example@example.com,J008,Applied
+C022,Micah Test,micah.test@example.com,J008,Screen
+C023,Jess Nolan,jess.nolan@example.com,J008,Applied
+C024,Toby Grant,toby.grant@example.com,J002,Applied
+C025,Wynn Osei,wynn.osei@example.com,J003,Screen

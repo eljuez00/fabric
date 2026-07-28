@@ -1,0 +1,9 @@
+job_id,title,department,location,status
+J001,Software Engineer,Engineering,Remote,Open
+J002,Product Manager,Product,"Austin, TX",Open
+J003,Data Analyst,Analytics,Remote,Open
+J004,Recruiter,People,"Chicago, IL",Open
+J005,UX Designer,Design,Remote,Open
+J006,Sales Development Rep,Sales,"New York, NY",Open
+J007,DevOps Engineer,Engineering,Remote,On Hold
+J008,Customer Success Manager,Customer Success,"Austin, TX",Open

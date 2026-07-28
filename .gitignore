@@ -1,0 +1,29 @@
+# --- Python -------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+venv/
+.venv/
+env/
+.env
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# --- Editors / OS ---------------------------------------------------------
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Generated demo output -------------------------------------------------
+# merge.py (Level 2) regenerates these every run - build artifacts, not source.
+level2-author/merged.html
+level2-author/merged.xlsx
+level2-author/merged.csv
