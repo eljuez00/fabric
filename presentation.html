@@ -385,6 +385,24 @@
     font-family: var(--mono);
   }
 
+  .links-row {
+    margin-top: 1.4rem;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--fg-dim);
+    max-width: 66ch;
+  }
+
+  .links-row a {
+    color: var(--l2);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+
+  .links-row a:hover, .links-row a:focus {
+    border-bottom-color: var(--l2);
+  }
+
   nav#progress {
     position: fixed;
     right: 1.2rem;
@@ -441,6 +459,16 @@
     Model (LLM) can be asked to do as the subject. Same dataset, three
     artifacts, one through-line: at each level, you hand over one more thing.
   </p>
+  <div class="links-row">
+    <a href="https://github.com/eljuez00/fabric" target="_blank" rel="noopener">Repo</a> ·
+    <a href="https://www.python.org/" target="_blank" rel="noopener">Python</a> ·
+    <a href="https://pandas.pydata.org/" target="_blank" rel="noopener">pandas</a> ·
+    <a href="https://www.sqlite.org/" target="_blank" rel="noopener">SQLite</a> ·
+    <a href="https://code.visualstudio.com/" target="_blank" rel="noopener">VS Code</a> ·
+    <a href="https://claude.ai/" target="_blank" rel="noopener">Claude</a> ·
+    <a href="https://claude.ai/code" target="_blank" rel="noopener">Claude Code</a> ·
+    <a href="https://chatgpt.com/" target="_blank" rel="noopener">ChatGPT</a>
+  </div>
   <div class="footer-note">Synthetic data only — built to illustrate a concept for a talk.</div>
 </section>
 
