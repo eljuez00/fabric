@@ -47,6 +47,10 @@ Prints a reconciliation summary (19/25 matched, 6 unmatched, 5 profiles
 unused) and the merged table, then writes `merged.html` + `merged.xlsx`
 into `level2-author/` (gitignored — regenerated each run).
 
+For more than a join, see [`level2-author/examples/`](level2-author/examples/) —
+a recruiter assignment rules engine and an SLA stage-escalation report,
+both real runs against this repo's data.
+
 ## Bonus
 
 The deeper win beyond Level 3: skip the export/report step entirely by

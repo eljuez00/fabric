@@ -1,0 +1,23 @@
+req_id,title,department,location,recruiter
+F001,Software Engineer,Engineering,Remote,Nina Placeholder
+F002,Senior Software Engineer,Engineering,Remote,Nina Placeholder
+F003,Backend Engineer,Engineering,Remote,Nina Placeholder
+F004,Software Engineer II,Engineering,Remote,Nina Placeholder
+F005,Staff Engineer,Engineering,Remote,Marcus Test
+F006,Product Manager,Product,"Austin, TX",Owen Sample
+F007,Senior Product Manager,Product,"Austin, TX",Owen Sample
+F008,Associate Product Manager,Product,"Austin, TX",Owen Sample
+F009,Product Manager,Product,"Austin, TX",Priya Demo
+F010,Data Analyst,Analytics,Remote,Priya Demo
+F011,Senior Data Analyst,Analytics,Remote,Priya Demo
+F012,Data Analyst II,Analytics,Remote,Nina Placeholder
+F013,Recruiter,People,"Austin, TX",Marcus Test
+F014,Senior Recruiter,People,"Austin, TX",Marcus Test
+F015,UX Designer,Design,Remote,Elena Mock
+F016,Senior UX Designer,Design,Remote,Elena Mock
+F017,Product Designer,Design,Remote,Owen Sample
+F018,Sales Development Rep,Sales,"New York, NY",Carlos Fake
+F019,Account Executive,Sales,"New York, NY",Carlos Fake
+F020,Software Engineer,Engineering,"Austin, TX",Owen Sample
+F021,Sales Development Rep,Sales,Remote,Carlos Fake
+F022,Data Analyst,Analytics,"Chicago, IL",Priya Demo

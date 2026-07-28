@@ -6,7 +6,7 @@ Level 2 still starts from an export: a CSV someone pulled and handed over,
 or a database you're allowed to query directly. Both are one step removed
 from the system of record. The deeper Level 3 win is skipping that step
 entirely: instead of waiting on a scheduled report or an admin-granted read
-replica, an agent with local access reads the source system's Web Services
+replica, an agent with full agentic access reads the source system's Web Services
 Description Language (WSDL) file - its machine-readable service
 description - understands the Simple Object Access Protocol (SOAP)
 operations it exposes, and calls the endpoint directly to pull the same

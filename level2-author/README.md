@@ -62,6 +62,20 @@ library does in three more lines each:
   writes to `.to_csv()`, `.to_html()`, `.to_excel()`, or `.to_sql()` —
   swapping formats doesn't touch the logic above it.
 
+## More elaborate examples
+
+`merge.py` is one shape of Level 2 — a join. It's not the only thing
+Python is good for here. **[`examples/`](examples/)** has two more, aimed
+at the kind of problem an Applicant Tracking System (ATS) administrator
+actually deals with: a **recruiter assignment engine** (a rule cascade
+over historical filled reqs that recommends who should staff each open
+one) and a **stage escalation report** (a Service Level Agreement, or
+SLA, per pipeline stage, flagging who's overdue and by how much). Neither
+is machine learning — both are the same "read data, apply deterministic
+rules, write output" shape as `merge.py`, just pointed at a different
+question. See [`examples/README.md`](examples/README.md) for both, with
+real output from a real run.
+
 ## Run it
 
 ```bash

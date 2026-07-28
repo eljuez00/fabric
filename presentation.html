@@ -1,6 +1,9 @@
-<title>fabric — an agentic development demo</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>fabric — an agentic development demo</title>
 <style>
   :root {
     --bg: #0b0e14;
@@ -446,9 +449,11 @@
     z-index: 10;
   }
 </style>
+</head>
+<body>
 
 <nav id="progress" aria-label="Slide navigation"></nav>
-<div class="slide-index" id="slide-index">1 / 8</div>
+<div class="slide-index" id="slide-index">1 / 9</div>
 <div class="hint">↑ ↓ / space / click dots to navigate</div>
 
 <section class="slide" id="s1">
@@ -494,7 +499,7 @@
       </tr>
       <tr class="row-l3">
         <td class="level-name">3 — Agent</td>
-        <td>runs it too, local access</td>
+        <td>runs it too, full agentic access</td>
         <td>thinking + code + <strong>execution</strong></td>
         <td><span style="color:var(--fg-dim);">—</span></td>
       </tr>
@@ -667,16 +672,27 @@ stalled = candidates_with_jobs[
 print(stage_counts.to_string())
 print(f"Stalled-but-active reqs: {stalled['job_id'].nunique()}")
 
-# 7. Write the merged view + analysis as HTML and Excel.
+# 7. Write BOTH files, each with two parts: the merged
+#    view and the analysis - true to the real script, not
+#    trimmed away for this slide.
 talent_view = merged[[
     "candidate_id", "full_name", "email", "job_id",
     "title", "department", "location", "stage",
     "current_title", "current_company",
     "years_experience",
 ]].rename(columns={"title": "job_title"})
+analysis_df = stage_counts.rename("candidate_count") \
+    .reset_index().rename(columns={"index": "stage"})
 
-talent_view.to_html(HERE / "merged.html", index=False)
-talent_view.to_excel(HERE / "merged.xlsx", index=False)</code></pre>
+with open(HERE / "merged.html", "w") as f:
+    f.write("<h2>Merged talent view</h2>\n")
+    f.write(talent_view.to_html(index=False))
+    f.write("\n<h2>Pipeline analysis</h2>\n")
+    f.write(analysis_df.to_html(index=False))
+
+with pd.ExcelWriter(HERE / "merged.xlsx") as writer:
+    talent_view.to_excel(writer, sheet_name="merged", index=False)
+    analysis_df.to_excel(writer, sheet_name="pipeline_analysis", index=False)</code></pre>
     </div>
   </div>
   <ul class="talk-points" style="margin-top:1.2rem; max-width:96ch;">
@@ -696,6 +712,81 @@ talent_view.to_excel(HERE / "merged.xlsx", index=False)</code></pre>
       is the whole point of asking for code instead of asking the question again.
     </p>
   </div>
+</section>
+
+<section class="slide" id="s4b">
+  <div class="kicker">Level 2, continued</div>
+  <h2>What else Python can do for an ATS admin</h2>
+  <p class="lede" style="margin-bottom:0.3em">
+    <code>merge.py</code> is one shape of Level 2. Two more, in
+    <code>level2-author/examples/</code> — same "read data, apply rules,
+    write output" pattern, aimed at problems an Applicant Tracking System
+    (ATS) administrator actually has, not another join.
+  </p>
+  <div class="two-col">
+    <div>
+      <h3>Recruiter assignment engine</h3>
+      <p style="color:var(--fg-dim); margin:0 0 0.6em 0;">
+        A req opens with no recruiter assigned. Instead of picking one from
+        memory — "Nina usually takes Engineering" — a rule cascade over 22
+        historical filled reqs decides: exact department + location match,
+        then department-only, then location-only, then whoever's lightest
+        loaded.
+      </p>
+      <pre><code>def recommend(department, location):
+    exact = history[
+        (history["department"] == department)
+        & (history["location"] == location)
+    ]
+    if len(exact):
+        top = exact["recruiter"].value_counts()
+        return top.idxmax(), "1: dept + location match"
+
+    dept_only = history[history["department"] == department]
+    if len(dept_only):
+        top = dept_only["recruiter"].value_counts()
+        return top.idxmax(), "2: department-only match"
+
+    location_only = history[history["location"] == location]
+    if len(location_only):
+        top = location_only["recruiter"].value_counts()
+        return top.idxmax(), "3: location-only match"
+
+    return least_loaded, "4: fallback - lightest load"</code></pre>
+      <div class="stat-row" style="margin-top:0.8rem;">
+        <div class="stat"><div class="n" style="color:var(--l2)">5/7</div><div class="label">open reqs matched exactly</div></div>
+        <div class="stat"><div class="n" style="color:var(--l3)">2/7</div><div class="label">needed a fallback rule</div></div>
+      </div>
+    </div>
+    <div>
+      <h3>Stage escalation report</h3>
+      <p style="color:var(--fg-dim); margin:0 0 0.6em 0;">
+        A candidate sits in Screen for three weeks and nobody notices. A
+        Service Level Agreement (SLA) per stage, checked automatically,
+        ranks everyone over their limit by how far over — not just who's
+        been in the pipeline longest overall.
+      </p>
+      <pre><code>SLA_DAYS = {
+    "Applied": 5, "Screen": 7,
+    "Interview": 10, "Offer": 3,
+}
+
+merged["sla_days"] = merged["stage"].map(SLA_DAYS)
+merged["days_over_sla"] = (
+    merged["days_in_current_stage"] - merged["sla_days"]
+)
+overdue = merged[merged["days_over_sla"] > 0] \
+    .sort_values("days_over_sla", ascending=False)</code></pre>
+      <div class="stat-row" style="margin-top:0.8rem;">
+        <div class="stat warn"><div class="n">7/25</div><div class="label">candidates over SLA</div></div>
+        <div class="stat"><div class="n" style="color:var(--l3)">7</div><div class="label">departments represented</div></div>
+      </div>
+    </div>
+  </div>
+  <p class="lede" style="margin-top:1rem">
+    Both are real runs against the real data in this repo — see
+    <code>level2-author/examples/</code> for the full scripts and output.
+  </p>
 </section>
 
 <section class="slide" id="s5">
@@ -1233,3 +1324,5 @@ talent_view.to_excel(HERE / "merged.xlsx", index=False)</code></pre>
     });
   })();
 </script>
+</body>
+</html>
