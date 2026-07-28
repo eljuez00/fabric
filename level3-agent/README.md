@@ -1,11 +1,12 @@
 # Level 3 — Agent
 
-The model has **local access**: it writes *and runs* the code, touches
-the filesystem, iterates on its own errors, and calls external services.
-This is a different kind of thing from Levels 1 and 2 — not because the
-model got smarter, but because what changed is **access**. It now lives
-in your environment (via a Command-Line Interface, or CLI, or its parent
-app) instead of a chat box.
+Full agentic access to the local workspace — or, scoped further out, the
+machine itself: the model writes *and runs* the code, touches the
+filesystem, iterates on its own errors, and calls external services. This
+is a different kind of thing from Levels 1 and 2 — not because the model
+got smarter, but because what changed is **access**. It now lives in your
+environment (via a Command-Line Interface, or CLI, or its parent app)
+instead of a chat box.
 
 ## The workspace, not just the script
 
@@ -29,7 +30,11 @@ as steps in one run, not two separate hand-offs:
 5. Go one step further than Level 2 ever could: skip the export step
    entirely, by reading the source system's Web Services Description
    Language (WSDL) file and calling its Simple Object Access Protocol
-   (SOAP) endpoint directly. See
+   (SOAP) endpoint directly — and do the development that takes, not just
+   the calling. A SOAP response comes back as XML, not a table: the agent
+   has to write the client code (envelopes, auth, pagination) *and* the
+   data wrangling to reshape that response into the same rows `merge.py`
+   produces, before the join logic even runs. See
    [`bonus-direct-wsdl.md`](bonus-direct-wsdl.md).
 
 That's the honest version of "a lot of the lifting from Level 2 gets

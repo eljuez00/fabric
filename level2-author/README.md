@@ -1,6 +1,10 @@
 # Level 2 — Author
 
-The model writes code. The human is still the runtime.
+The model writes code. The human is still the runtime. Where Level 1
+reasons over one or more datasets *in the chat*, Level 2 takes that same
+kind of input — one dataset, two, or here, three — and instead of
+answering directly, produces a Python script to do it. The power isn't
+the answer this time; it's having the model develop the code for you.
 
 - **`merge.py`** — reads the shared `jobs.csv`, `candidates.csv`, and
   `enrichment.db` (one directory up), joins all three, prints a
@@ -13,6 +17,18 @@ file."* The same chat window and the same model that gave you the Level 1
 analysis — asked for a tool instead of an answer. See the root
 [README](../README.md) and [`presentation.html`](../presentation.html)
 for the exact spec.
+
+## Why code, not another chat message
+
+This is the classic *"I have to prepare this report every Monday"*
+scenario. Pasting three files into a chat and hoping the model resolves
+the same name mismatches the same way, every single week, is Level 1's
+failure mode stretched out over time — see the "not recommended" flavor
+of Level 1 in [`level1-analyst/prompt.md`](../level1-analyst/prompt.md).
+A script doesn't improvise: same three inputs in, same join logic, same
+reconciliation, same two files out, every Monday. That determinism —
+not a smarter answer — is the entire reason to ask for code instead of
+asking the question again.
 
 ## Level 1's capability, now inside the automation
 

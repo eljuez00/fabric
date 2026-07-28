@@ -520,6 +520,20 @@
     front-loaded, no Engineering offers yet, and one paused req still has
     people moving through it. All reasoning. No action.
   </p>
+  <div class="callout" style="border-color: var(--l1)">
+    <span class="flag" style="color: var(--l1)">Also Level 1 — and not recommended</span>
+    <p>
+      Sometimes "the table" is more than one file: paste the candidate
+      export <em>and</em> a profile export into the same chat and ask the
+      model to reconcile them itself, in its head. Still Level 1 — nothing
+      executes, it's reasoning over pasted text, not running a query — but
+      it won't resolve the same edge cases the same way twice, there's no
+      file left behind to check, and it quietly breaks past a page or two
+      of data. Worth doing anyway: a second pair of eyes, or a deeper pass
+      than you want to do by hand. That fragility, not the single-table
+      case above, is the real argument for Level 2.
+    </p>
+  </div>
 </section>
 
 <section class="slide" id="s4">
@@ -559,7 +573,9 @@ merge.py
 --------
 Level 2 - Author. Reads three shared sources - two flat
 files and a SQLite database - and produces one merged
-view, written out as both HTML and Excel.
+view, written out as both HTML and Excel. Whether it's
+one source or five doesn't change the shape of the work:
+load, join, reconcile, write.
 
     ../jobs.csv       -> pandas  (exported report)
     ../candidates.csv -> pandas  (exported report)
@@ -611,14 +627,16 @@ print(f"Matched: {len(matched)}  "
       f"Unmatched: {len(unmatched)}  "
       f"Unused profiles: {len(unused)}")
 
-# 6b. Level 1's reasoning, folded in and automated:
-#     a .groupby() for stage counts, a boolean mask
-#     for the on-hold-but-still-active bottleneck.
+# 6. Level 1's reasoning, folded in and automated:
+#    a .groupby() for stage counts, a boolean mask
+#    for the on-hold-but-still-active bottleneck.
 stage_counts = candidates["stage"].value_counts()
 stalled = candidates_with_jobs[
     (candidates_with_jobs["status"] == "On Hold")
     & (candidates_with_jobs["stage"] != "Applied")
 ]
+print(stage_counts.to_string())
+print(f"Stalled-but-active reqs: {stalled['job_id'].nunique()}")
 
 # 7. Write the merged view + analysis as HTML and Excel.
 talent_view = merged[[
@@ -638,6 +656,17 @@ talent_view.to_excel(HERE / "merged.xlsx", index=False)</code></pre>
     <li><strong>Boolean masks filter thousands of rows as fast as one</strong> — <code>status == "On Hold"</code> replaces a manual loop entirely.</li>
     <li><strong>Output format is a parameter, not a rewrite</strong> — the same table writes to <code>.to_csv()</code>, <code>.to_html()</code>, <code>.to_excel()</code>, or <code>.to_sql()</code>.</li>
   </ul>
+  <div class="callout" style="border-color: var(--l2)">
+    <span class="flag" style="color: var(--l2)">Why code, not another chat message</span>
+    <p>
+      The classic case: <em>"I have to prepare this report every Monday."</em>
+      Pasting three files into a chat and hoping the model resolves the
+      same name mismatches the same way, every week, is Level 1's fragile
+      flavor stretched out over time. A script doesn't improvise — same
+      three inputs, same join, same output, every Monday. That determinism
+      is the whole point of asking for code instead of asking the question again.
+    </p>
+  </div>
 </section>
 
 <section class="slide" id="s5">
@@ -671,12 +700,13 @@ talent_view.to_excel(HERE / "merged.xlsx", index=False)</code></pre>
   <div class="kicker">Level 3</div>
   <h2>Agent — a workspace, not just a script</h2>
   <div class="level-card l3">
-    <span class="role">local access</span>
+    <span class="role">full agentic access — workspace, or the machine itself</span>
     <p class="lede" style="margin:0.5em 0 0 0">
       Level 3 isn't "the agent runs <code>merge.py</code> for you." It's
       the agent given a small, scoped <strong>workspace</strong> — a
-      directory it can read from and write to — and left to rebuild what
-      Level 1 and Level 2 did as steps in one run, not two hand-offs.
+      directory it can read from and write to — and left to do all of the
+      development itself: rebuild what Level 1 and Level 2 did as steps in
+      one run, not two hand-offs.
     </p>
   </div>
   <div class="two-col">
@@ -711,11 +741,16 @@ talent_view.to_excel(HERE / "merged.xlsx", index=False)</code></pre>
           <code>jobs.csv</code>/<code>candidates.csv</code> as exports
           entirely. The agent reads the source system's Web Services
           Description Language (WSDL) file and calls its Simple Object
-          Access Protocol (SOAP) endpoint directly — including skipping
-          the step of building a custom analytics/reporting extract
-          inside the Applicant Tracking System's (ATS's) own admin
-          console, which is still a human-maintained export either way.
-          See <code>level3-agent/bonus-direct-wsdl.md</code>.
+          Access Protocol (SOAP) endpoint directly — and does the data
+          wrangling that takes, too: a SOAP response comes back as XML,
+          not a table, so the agent has to parse and reshape it into the
+          same rows <code>merge.py</code> expects before the join logic
+          can even run. Real development end to end, inside its own
+          workspace — including skipping the step of building a custom
+          analytics/reporting extract inside the Applicant Tracking
+          System's (ATS's) own admin console, which is still a
+          human-maintained export either way. See
+          <code>level3-agent/bonus-direct-wsdl.md</code>.
         </p>
       </div>
     </div>
@@ -1100,10 +1135,10 @@ talent_view.to_excel(HERE / "merged.xlsx", index=False)</code></pre>
   <div class="callout">
     <span class="flag">The deeper win — recap</span>
     <p>
-      The furthest the agent goes: skip the export step entirely and call
-      the source system directly (Level 3's small bonus, previous slide) —
-      building real integration code a human wouldn't hand-write, in a
-      workspace scoped enough that it's safe to hand over.
+      The furthest the agent goes: skip the export step entirely, call the
+      source system directly, and wrangle the response itself — Level 3's
+      small bonus — building real integration code a human wouldn't
+      hand-write, in a workspace scoped enough that it's safe to hand over.
     </p>
   </div>
 </section>

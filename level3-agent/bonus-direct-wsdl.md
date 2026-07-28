@@ -12,12 +12,20 @@ description - understands the Simple Object Access Protocol (SOAP)
 operations it exposes, and calls the endpoint directly to pull the same
 data live - no export, no email, no intermediate file, and no human
 running a script in the middle. This is meaningfully harder than a CSV
-join: the agent is writing real integration code - request envelopes,
-authentication, pagination - against a contract most humans wouldn't
-hand-write from scratch. It is also exactly the kind of data-movement path
-a governance/admin review needs eyes on (see the closing slide of
-`../presentation.html`). All endpoints and URLs below are redacted to
-`example.com` - swap in the real writeup for your own environment.
+join, and in two distinct ways: the agent is writing real integration code
+- request envelopes, authentication, pagination - against a contract most
+humans wouldn't hand-write from scratch, and then it has to do its own
+data wrangling on top of that. A SOAP response comes back as XML, not a
+tidy table - there's no `pd.read_sql_query` waiting to hand it a
+DataFrame. The agent has to parse that response and reshape it into the
+same rows `merge.py` expects, *before* any of the join or reconciliation
+logic can even run. That's real development work end to end - call the
+service, wrangle what comes back into shape, then merge - done inside the
+agent's own workspace, not handed to it pre-cleaned. It is also exactly
+the kind of data-movement path a governance/admin review needs eyes on
+(see the closing slide of `../presentation.html`). All endpoints and URLs
+below are redacted to `example.com` - swap in the real writeup for your
+own environment.
 
 Example of the shape (redacted, illustrative only):
 

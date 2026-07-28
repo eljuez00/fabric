@@ -25,7 +25,7 @@ more thing, and does less of the surrounding lifting.
 |---|---|---|---|
 | [1 — Analyst](level1-analyst/) | reasons over data you bring it | analysis | pulls the data, reads the answer, decides what to do |
 | [2 — Author](level2-author/) | writes code from a spec | the code-writing | runs the tool, feeds it files, moves the output, debugs errors |
-| [3 — Agent](level3-agent/) | writes **and runs** code, with local access | the doing | describes intent, verifies output |
+| [3 — Agent](level3-agent/) | writes **and runs** code, full agentic access to the workspace | the doing | describes intent, verifies output |
 
 **Levels 1 and 2 happen in the same chat window, with the same model** —
 what changes between them is only what you asked *for*: an answer, or a
@@ -52,17 +52,23 @@ Two things worth noticing once you've seen all three:
 - **[`level1-analyst/`](level1-analyst/)** — the whole level is
   input → prompt → output: `candidates.xlsx` (the pipeline export),
   `prompt.md` (the plain-English ask), and `analysis.md` (the written
-  analysis the model gives back). Nothing executes.
+  analysis the model gives back). Nothing executes. `prompt.md` also
+  covers the other common — and not recommended — flavor of this level:
+  pasting two or more datasets into the same chat and asking the model to
+  reconcile them itself, no code involved.
 - **[`level2-author/`](level2-author/)** — `merge.py`: reads the shared
   `jobs.csv`, `candidates.csv`, and `enrichment.db`, joins them, folds in
   the same pipeline analysis Level 1 did by hand, and writes
-  `merged.html` + `merged.xlsx`. A tool the human still has to run.
+  `merged.html` + `merged.xlsx`. A tool the human still has to run — but
+  a tool, not another one-off answer: the classic "I prepare this report
+  every Monday" case, made deterministic.
 - **[`level3-agent/`](level3-agent/)** — `workspace/` (the scoped
   directory a Level 3 agent works inside) and `bonus-direct-wsdl.md`: the
   same merged outcome as Level 2, reached with the human removed from the
   loop — the agent runs the merge itself, and can go one step further via
   a direct Web Services Description Language (WSDL) / Simple Object
-  Access Protocol (SOAP) call instead of waiting on an export.
+  Access Protocol (SOAP) call instead of waiting on an export, doing its
+  own data wrangling on the raw response before the join logic runs.
 
 ## Shared data
 
@@ -112,7 +118,10 @@ replica. The deeper agentic-development win is going one step further: an
 agent that reads a source system's WSDL and calls its SOAP endpoint
 directly, with no export step at all — including skipping the step of
 building a custom analytics/reporting extract inside the ATS's own admin
-console, which is still a human-maintained export either way. See
+console, which is still a human-maintained export either way. That call
+comes back as raw XML, not a table, so the agent also does its own data
+wrangling — parsing and reshaping the response into the same rows
+`merge.py` expects — before any join logic runs. See
 [`level3-agent/bonus-direct-wsdl.md`](level3-agent/bonus-direct-wsdl.md) —
 and the closing slide of `presentation.html` for why that's also exactly
 the kind of data-movement pattern that needs a governance eye on it.

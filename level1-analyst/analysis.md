@@ -45,8 +45,12 @@ to do about it.*
 
 ## What this level does and doesn't do
 
-This is analysis only. It doesn't touch a database, it doesn't merge in
-the profile data from `enrichment.db`, and it doesn't write any file back
-out. Everything here came from reasoning over the one table it was given.
-That combination — and completeness — of automation is what changes at
-the next level.
+This particular example is analysis over one table: nothing merged,
+nothing executed, no file written back out. Level 1 can also stretch to
+reasoning over two or more pasted datasets at once — a real pattern,
+useful as a second pair of eyes or a deeper pass than you'd want to do by
+hand — but that version isn't repeatable or auditable, and it's not what's
+shown here. See [`prompt.md`](prompt.md) for that trade-off. Either way,
+the limit is the same: reasoning only, no code, no execution. What
+changes at the next level isn't the reasoning — it's turning that
+reasoning into a script that gives the same answer every time.
