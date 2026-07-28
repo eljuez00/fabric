@@ -4,29 +4,58 @@ The model has **local access**: it writes *and runs* the code, touches
 the filesystem, iterates on its own errors, and calls external services.
 This is a different kind of thing from Levels 1 and 2 — not because the
 model got smarter, but because what changed is **access**. It now lives
-in your environment (via a CLI or its parent app) instead of a chat box.
+in your environment (via a Command-Line Interface, or CLI, or its parent
+app) instead of a chat box.
 
-Concretely, for this dataset, a Level 3 agent would:
+## The workspace, not just the script
 
-1. Read the same three sources Level 2 reads by hand-run script.
-2. Reach the **same merged outcome** as `../level2-author/merge.py` — but
-   instead of a human exporting files and running the script, the agent
-   fetches what it needs and runs the whole pipeline itself.
-3. Go one step further than Level 2 can: skip the export step entirely by
-   calling the source system directly. See **[`bonus-direct-wsdl.md`](bonus-direct-wsdl.md)**
-   — an agent that reads a system's WSDL and calls its SOAP endpoint
-   directly, with no export, no email, no intermediate file.
+Level 2 is one script a human runs by hand. Level 3 isn't "the agent
+runs `merge.py` for you" — it's the agent given a small, scoped
+**workspace**: a directory it can read from and write to, containing
+nothing but what this demo needs (the three shared source files, room to
+write its own scripts, room to write its own output). See
+[`workspace/README.md`](workspace/README.md) for what that looks like.
 
-That collapses the human's job down to two things: **describe intent**,
-**verify output**. Everything in between — writing the code, running it,
-fixing what breaks, fetching the data — is no longer on the human.
+Inside that workspace, a Level 3 agent can rebuild what Levels 1 and 2 did
+as steps in one run, not two separate hand-offs:
 
-## Why the governance flag lives here, and nowhere else
+1. Read `jobs.csv`, `candidates.csv`, and `enrichment.db` itself.
+2. Write the equivalent of `merge.py` — or reuse it — and **run it**,
+   the way a human would have had to at Level 2.
+3. Read its own output, catch an error, fix it, and re-run — the
+   debugging loop that was the human's job in Level 2 is now the agent's.
+4. Reach the same merged talent view Level 2 produces, with the human
+   removed from every step in between.
+5. Go one step further than Level 2 ever could: skip the export step
+   entirely, by reading the source system's Web Services Description
+   Language (WSDL) file and calling its Simple Object Access Protocol
+   (SOAP) endpoint directly. See
+   [`bonus-direct-wsdl.md`](bonus-direct-wsdl.md).
 
-At Level 1 you can judge the analysis before acting on it. At Level 2 you
-can read the code before you run it. At Level 3, by the time you're
-looking at anything, the agent has **already acted** — it already reached
-into a system and moved data. That's not a reason to avoid Level 3. It's
-the reason it needs a governance eye that Levels 1 and 2 don't: scoped
-access, an audit trail, and a human sign-off on what's allowed to move
-where. See the closing slide of [`../presentation.html`](../presentation.html).
+That's the honest version of "a lot of the lifting from Level 2 gets
+absorbed by the agent" — not a smarter merge, the same merge, minus the
+human running it by hand.
+
+## Agentic safety: what local access actually costs
+
+Local access is the whole point of Level 3 — and the whole reason it
+needs guardrails Levels 1 and 2 never did:
+
+- **Scope the workspace.** The agent should only be able to read and
+  write inside a directory built for this, not the rest of the
+  filesystem. A small, disposable workspace is a control, not a
+  convenience.
+- **Everything it touches should be logged.** At Levels 1 and 2, a human
+  read the output before anything happened. At Level 3, the agent has
+  already read files, run code, and possibly called an external service
+  by the time a human looks — an audit trail is the only way to
+  reconstruct what happened after the fact.
+- **Network access is a separate decision from filesystem access.**
+  Being allowed to write a script is not the same as being allowed to
+  call a live system's SOAP endpoint. Grant those separately, and review
+  the second one harder than the first.
+
+See the closing slide of [`../presentation.html`](../presentation.html)
+for why this is exactly the kind of data-movement pattern an admin has to
+be able to see and control — not a reason to avoid Level 3, but the cost
+of the autonomy it buys you.

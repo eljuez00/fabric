@@ -7,21 +7,41 @@ It is a TOOL, not an action: a human still has to run it, point it at the
 right files, and do something with what comes out the other end.
 
 It reads three shared sources - two flat files and a SQLite database - and
-produces one merged view, written out as both HTML and Excel:
+produces one merged view, written out as both an HTML (HyperText Markup
+Language) file and an Excel file:
 
-    ../jobs.csv         -> pandas   (a flat file - an exported report)
-    ../candidates.csv   -> pandas   (a flat file - an exported report)
-    ../enrichment.db     -> SQL      (a live system you could query directly)
+    ../jobs.csv         -> pandas  (a flat file - an exported report)
+    ../candidates.csv   -> pandas  (a flat file - an exported report)
+    ../enrichment.db     -> SQL     (a live system you could query directly)
 
 Each source gets the tool that fits its shape: pandas for the two CSVs, a
-real SQL SELECT for the database. That recognition is the point, not the
-Python itself.
+real SQL (Structured Query Language) SELECT for the database. That
+recognition is the point, not the Python itself - though pandas is doing
+real work here that's worth naming:
+
+    - one library reads three different shapes of data (CSV, SQL, and it
+      can just as easily read Excel, JSON, or Parquet)
+    - .merge() is a full relational join - inner/left/right/outer - without
+      writing SQL by hand once the data is loaded
+    - boolean masks (see step 5 and step 6b below) filter and slice
+      thousands of rows as fast as one row, with no explicit loop
+    - .groupby() turns "how many candidates are in each stage" from a
+      manual tally into one line
+    - the same DataFrame writes back out to .to_csv(), .to_html(),
+      .to_excel(), or .to_sql() - the output format is a parameter, not a
+      rewrite
 
 The candidate names in candidates.csv and the profile names in
 enrichment.db do not all match cleanly. This script does NOT paper over
 that - it computes a reconciliation summary and prints it before it ever
 writes the "clean" merged view, so a human can see exactly what matched,
 what didn't, and what's left over.
+
+This script also folds in what Level 1 did by hand: the pipeline analysis
+a human used to paste into a chat and ask about (stage counts, the
+on-hold-but-still-active bottleneck) now runs automatically, every time,
+as part of the same pipeline - see step 6b. That's Level 1's capability,
+absorbed into Level 2's automation.
 
 Run with:  python merge.py
 Requires:  pandas, openpyxl   (sqlite3 is part of the standard library)
@@ -57,7 +77,7 @@ conn.close()
 
 # ---------------------------------------------------------------------------
 # 3. Join jobs -> candidates first. Every candidate applied to exactly one
-#    req, so this half is a clean one-to-one merge on job_id.
+#    req (requisition), so this half is a clean one-to-one merge on job_id.
 # ---------------------------------------------------------------------------
 candidates_with_jobs = candidates.merge(
     jobs, on="job_id", how="left", suffixes=("", "_job")
@@ -134,14 +154,54 @@ print("=" * 60)
 print(talent_view.to_string(index=False))
 
 # ---------------------------------------------------------------------------
-# 7. Write the merged view out as BOTH an HTML file and an Excel file.
-#    A human still has to run this script and do something with these two
-#    files - that's the honest limit of Level 2.
+# 6b. Level 1's analysis, folded into the automation.
+#     A human used to paste a pipeline export into a chat and ask "how is
+#     this distributed, and is anything inconsistent?" That reasoning is
+#     mechanical enough to run every time, unattended - a .groupby() for
+#     the stage counts, a boolean mask for the bottleneck check - so it's
+#     computed here instead of asked for separately.
 # ---------------------------------------------------------------------------
+stage_counts = candidates["stage"].value_counts().reindex(
+    ["Applied", "Screen", "Interview", "Offer"]
+)
+
+active_stages = ["Screen", "Interview", "Offer"]
+on_hold_with_movement = candidates_with_jobs[
+    (candidates_with_jobs["status"] == "On Hold")
+    & (candidates_with_jobs["stage"].isin(active_stages))
+]
+stalled_reqs = on_hold_with_movement.groupby(["job_id", "title"]).size()
+
+print("\n" + "=" * 60)
+print("PIPELINE ANALYSIS (Level 1's reasoning, now automated)")
+print("=" * 60)
+print(stage_counts.to_string())
+if len(stalled_reqs):
+    print("\nReqs marked On Hold that still have candidates past Applied:")
+    for (job_id, title), count in stalled_reqs.items():
+        print(f"    - {job_id} {title}: {count} candidate(s) still moving")
+print("=" * 60)
+
+# ---------------------------------------------------------------------------
+# 7. Write everything out as BOTH an HTML file and an Excel file - the
+#    merged view and the pipeline analysis together. A human still has to
+#    run this script and do something with these two files - that's the
+#    honest limit of Level 2.
+# ---------------------------------------------------------------------------
+analysis_df = stage_counts.rename("candidate_count").reset_index().rename(
+    columns={"index": "stage"}
+)
+
 html_path = HERE / "merged.html"
-talent_view.to_html(html_path, index=False, na_rep="")
+with open(html_path, "w", encoding="utf-8") as f:
+    f.write("<h2>Merged talent view</h2>\n")
+    f.write(talent_view.to_html(index=False, na_rep=""))
+    f.write("\n<h2>Pipeline analysis (Level 1, automated)</h2>\n")
+    f.write(analysis_df.to_html(index=False))
 print(f"\nSaved HTML view to {html_path.name}")
 
 xlsx_path = HERE / "merged.xlsx"
-talent_view.to_excel(xlsx_path, index=False, sheet_name="merged", na_rep="")
-print(f"Saved Excel view to {xlsx_path.name}")
+with pd.ExcelWriter(xlsx_path) as writer:
+    talent_view.to_excel(writer, index=False, sheet_name="merged", na_rep="")
+    analysis_df.to_excel(writer, index=False, sheet_name="pipeline_analysis")
+print(f"Saved Excel view to {xlsx_path.name} (sheets: merged, pipeline_analysis)")

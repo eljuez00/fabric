@@ -158,6 +158,55 @@
     color: var(--fg-dim);
   }
 
+  /* --- level 1 input/prompt/output flow --- */
+  .flow-wrap {
+    display: flex;
+    align-items: stretch;
+    gap: 0.7rem;
+    max-width: 96ch;
+    margin: 1.1rem 0;
+    flex-wrap: wrap;
+  }
+
+  .flow-step {
+    flex: 1;
+    min-width: 220px;
+    border: 1px solid var(--border);
+    background: var(--bg-raised);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+  }
+
+  .flow-step .tag {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--l1);
+  }
+
+  .flow-step h3 { margin: 0.3em 0 0.3em 0; font-size: 1rem; }
+  .flow-step p { margin: 0; color: var(--fg-dim); font-size: 0.92rem; }
+  .flow-step .quote {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--fg-dim);
+    font-style: italic;
+  }
+
+  .flow-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    color: var(--l1);
+    padding: 0 0.2rem;
+  }
+
+  @media (max-width: 820px) {
+    .flow-arrow { transform: rotate(90deg); }
+  }
+
   .stat-row {
     display: flex;
     gap: 1.2rem;
@@ -388,9 +437,9 @@
   <div class="kicker">A talk about agentic development</div>
   <h1>fabric</h1>
   <p class="lede">
-    Recruiting data as the vehicle. Three levels of what an LLM can be
-    asked to do as the subject. Same dataset, three artifacts, one
-    through-line: at each level, you hand over one more thing.
+    Recruiting data as the vehicle. Three levels of what a Large Language
+    Model (LLM) can be asked to do as the subject. Same dataset, three
+    artifacts, one through-line: at each level, you hand over one more thing.
   </p>
   <div class="footer-note">Synthetic data only — built to illustrate a concept for a talk.</div>
 </section>
@@ -434,22 +483,42 @@
   <div class="level-card l1">
     <span class="role">nothing executes</span>
     <p class="lede" style="margin:0.5em 0 0 0">
-      A pipeline export — <code>candidates.xlsx</code> — pasted into a chat.
-      The model reads it and reasons back. It never touches a filesystem,
-      never runs a query. The human already did all the surrounding work:
-      pulled the data, opened the model, and will still have to decide
-      what to do with the answer.
+      The whole level is one line: <strong>input → prompt → output.</strong>
+      The model reads a table and reasons back — it never touches a
+      filesystem, never runs a query. The human did all the surrounding
+      work: pulled the data, opened the model, and will still have to
+      decide what to do with the answer.
     </p>
+  </div>
+  <div class="flow-wrap">
+    <div class="flow-step">
+      <span class="tag">Input</span>
+      <h3>candidates.xlsx</h3>
+      <p>A 25-row pipeline export, attached to the chat — see <code>level1-analyst/candidates.xlsx</code>.</p>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <span class="tag">Prompt</span>
+      <h3>The plain-English ask</h3>
+      <p class="quote">"Look at this table — how's the pipeline distributed, where's the bottleneck, and is anything inconsistent I should double-check?"</p>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <span class="tag">Output</span>
+      <h3>analysis.md</h3>
+      <p>Stage counts, the front-loaded-funnel bottleneck, and one flagged inconsistency — reasoning only, no action.</p>
+    </div>
   </div>
   <div class="stat-row">
     <div class="stat l1"><div class="n">11 / 25</div><div class="label">candidates still in Applied</div></div>
     <div class="stat l1"><div class="n">2 / 25</div><div class="label">candidates at Offer</div></div>
-    <div class="stat warn"><div class="n">J007</div><div class="label">req "On Hold" — still has active candidates</div></div>
+    <div class="stat warn"><div class="n">J007</div><div class="label">requisition (req) "On Hold" — still has active candidates</div></div>
   </div>
   <p class="lede">
-    Real observations from <code>level1-analyst/analysis.md</code> — the
-    funnel is front-loaded, no Engineering offers yet, and one paused req
-    still has people moving through it. All reasoning. No action.
+    Real observations from <code>level1-analyst/analysis.md</code> — full
+    prompt in <code>level1-analyst/prompt.md</code>. The funnel is
+    front-loaded, no Engineering offers yet, and one paused req still has
+    people moving through it. All reasoning. No action.
   </p>
 </section>
 
@@ -459,7 +528,10 @@
   <p class="lede" style="margin-bottom:0.3em">
     Same chat window, same model as Level 1 — the only thing that changed
     is what was asked <em>for</em>. This is prepared work, not a live run:
-    the spec below is what produced <code>merge.py</code>, shown in full underneath it.
+    the spec below is what produced <code>merge.py</code>, shown in full
+    underneath it — it queries the database with a SQL (Structured Query
+    Language) SELECT and writes an HTML (HyperText Markup Language) file
+    plus an Excel file.
   </p>
   <div class="two-col">
     <div>
@@ -475,6 +547,8 @@ and:
   print how many candidates matched a profile,
   how many didn't, and how many profiles went
   unused
+- also compute the same stage-count / bottleneck
+  check Level 1 did by hand - automatically
 - write the merged view out as BOTH an HTML file
   and an Excel file</div>
     </div>
@@ -537,7 +611,16 @@ print(f"Matched: {len(matched)}  "
       f"Unmatched: {len(unmatched)}  "
       f"Unused profiles: {len(unused)}")
 
-# 6. Write the merged view out as HTML and Excel.
+# 6b. Level 1's reasoning, folded in and automated:
+#     a .groupby() for stage counts, a boolean mask
+#     for the on-hold-but-still-active bottleneck.
+stage_counts = candidates["stage"].value_counts()
+stalled = candidates_with_jobs[
+    (candidates_with_jobs["status"] == "On Hold")
+    & (candidates_with_jobs["stage"] != "Applied")
+]
+
+# 7. Write the merged view + analysis as HTML and Excel.
 talent_view = merged[[
     "candidate_id", "full_name", "email", "job_id",
     "title", "department", "location", "stage",
@@ -549,6 +632,12 @@ talent_view.to_html(HERE / "merged.html", index=False)
 talent_view.to_excel(HERE / "merged.xlsx", index=False)</code></pre>
     </div>
   </div>
+  <ul class="talk-points" style="margin-top:1.2rem; max-width:96ch;">
+    <li><strong>One API, many shapes.</strong> <code>read_csv</code>, <code>read_sql_query</code>, <code>read_excel</code> all hand back the same kind of table — a flat file and a live database become interchangeable once loaded.</li>
+    <li><strong><code>.merge()</code> is a real relational join</strong> (inner/left/right/outer) with no hand-written SQL once the data's in memory.</li>
+    <li><strong>Boolean masks filter thousands of rows as fast as one</strong> — <code>status == "On Hold"</code> replaces a manual loop entirely.</li>
+    <li><strong>Output format is a parameter, not a rewrite</strong> — the same table writes to <code>.to_csv()</code>, <code>.to_html()</code>, <code>.to_excel()</code>, or <code>.to_sql()</code>.</li>
+  </ul>
 </section>
 
 <section class="slide" id="s5">
@@ -567,8 +656,9 @@ talent_view.to_excel(HERE / "merged.xlsx", index=False)</code></pre>
       <span class="tag" style="color:var(--l3)">Level 3</span>
       <h3 style="color:var(--l3)">The model gets access.</h3>
       <p>Not a smarter model — a model that now lives in your environment,
-        via a CLI or its parent app. It reaches into the filesystem, runs
-        what it writes, iterates on its own errors, calls out to services.</p>
+        via a Command-Line Interface (CLI) or its parent app. It reaches
+        into the filesystem, runs what it writes, iterates on its own
+        errors, calls out to services.</p>
     </div>
   </div>
   <p class="lede" style="margin-top:1.2rem">
@@ -579,24 +669,57 @@ talent_view.to_excel(HERE / "merged.xlsx", index=False)</code></pre>
 
 <section class="slide" id="s6">
   <div class="kicker">Level 3</div>
-  <h2>Agent — writes and runs, iterates, calls out</h2>
+  <h2>Agent — a workspace, not just a script</h2>
   <div class="level-card l3">
     <span class="role">local access</span>
     <p class="lede" style="margin:0.5em 0 0 0">
-      A Level 3 agent reaches the exact same merged outcome as
-      <code>level2-author/merge.py</code> — but nobody exports a file or
-      runs a script by hand. It goes one step further, too: instead of
-      waiting on <code>jobs.csv</code>/<code>candidates.csv</code> to be
-      exported at all, it reads the source system's <strong>WSDL</strong>
-      and calls the <strong>SOAP endpoint directly</strong>, then runs the
-      whole pipeline itself. See <code>level3-agent/bonus-direct-wsdl.md</code>.
+      Level 3 isn't "the agent runs <code>merge.py</code> for you." It's
+      the agent given a small, scoped <strong>workspace</strong> — a
+      directory it can read from and write to — and left to rebuild what
+      Level 1 and Level 2 did as steps in one run, not two hand-offs.
     </p>
   </div>
-  <ul class="talk-points">
-    <li>Same destination as Level 2 — the merged talent view — reached with the human removed from the loop.</li>
-    <li>Writing real integration code (auth, pagination, request envelopes) most humans wouldn't hand-write.</li>
-    <li>The human's job collapses to two things: describe intent, verify output.</li>
-  </ul>
+  <div class="two-col">
+    <div>
+      <h3>The workspace</h3>
+      <pre style="max-height:none"><code>workspace/
+├── inputs/    read-only copies of the three
+│              shared source files
+├── scratch/   read-write: scripts the agent
+│              writes and re-runs
+└── output/    read-write: the merged view it
+               produces</code></pre>
+      <ul class="talk-points" style="max-width:none">
+        <li>Reads all three shared sources itself — no human exporting a file.</li>
+        <li>Writes the merge, <em>runs</em> it, reads its own error, fixes it, re-runs — the debugging loop that was the human's job at Level 2.</li>
+        <li>A lot of Level 2's lifting moves here: running the tool, feeding it files, and debugging it are now the agent's job, not the human's.</li>
+      </ul>
+    </div>
+    <div>
+      <div class="callout governance" style="margin-top:0">
+        <span class="flag">Agentic safety — local access</span>
+        <p>Scope the workspace so the agent can only touch this directory,
+          not the rest of the filesystem. Log everything it reads, runs,
+          and writes — at Level 3 it acts before a human gets to check.
+          Treat network access (calling an external service) as a separate,
+          harder-reviewed grant from filesystem access.</p>
+      </div>
+      <div class="callout" style="border-color: var(--l3)">
+        <span class="flag" style="color: var(--l3)">Small bonus</span>
+        <p>
+          Go one step further than Level 2 ever could: skip
+          <code>jobs.csv</code>/<code>candidates.csv</code> as exports
+          entirely. The agent reads the source system's Web Services
+          Description Language (WSDL) file and calls its Simple Object
+          Access Protocol (SOAP) endpoint directly — including skipping
+          the step of building a custom analytics/reporting extract
+          inside the Applicant Tracking System's (ATS's) own admin
+          console, which is still a human-maintained export either way.
+          See <code>level3-agent/bonus-direct-wsdl.md</code>.
+        </p>
+      </div>
+    </div>
+  </div>
 </section>
 
 <section class="slide" id="s7">
@@ -975,14 +1098,12 @@ talent_view.to_excel(HERE / "merged.xlsx", index=False)</code></pre>
     </p>
   </div>
   <div class="callout">
-    <span class="flag">The deeper win</span>
+    <span class="flag">The deeper win — recap</span>
     <p>
-      The real agentic-development payoff goes one step further than
-      anything shown so far: an agent that reads a source system's
-      <strong>WSDL</strong> and calls its <strong>SOAP endpoint directly</strong> —
-      skipping the export step entirely, building real integration code a
-      human wouldn't hand-write. See
-      <code>level3-agent/bonus-direct-wsdl.md</code>.
+      The furthest the agent goes: skip the export step entirely and call
+      the source system directly (Level 3's small bonus, previous slide) —
+      building real integration code a human wouldn't hand-write, in a
+      workspace scoped enough that it's safe to hand over.
     </p>
   </div>
 </section>

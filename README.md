@@ -7,8 +7,8 @@
 `fabric` is a small, self-contained demo for a talk about **agentic
 development**. It uses a talent-acquisition scenario as the concrete
 vehicle, but the point isn't recruiting software — it's a journey across
-three levels of what an LLM can be asked to do, and how much of the work
-the human still has to do at each one.
+three levels of what a Large Language Model (LLM) can be asked to do, and
+how much of the work the human still has to do at each one.
 
 **Nothing in this repo runs live during the talk and no model is called
 at presentation time.** Every script here was written once, run once
@@ -30,9 +30,9 @@ more thing, and does less of the surrounding lifting.
 **Levels 1 and 2 happen in the same chat window, with the same model** —
 what changes between them is only what you asked *for*: an answer, or a
 tool. Level 3 is a different kind of thing, because what changes is
-**access** — the agent now lives in your environment (a CLI, its parent
-app) instead of a chat box. That shift from *request* to *access* is the
-chapter break of the talk.
+**access** — the agent now lives in your environment (a Command-Line
+Interface, or CLI, or its parent app) instead of a chat box. That shift
+from *request* to *access* is the chapter break of the talk.
 
 Two things worth noticing once you've seen all three:
 
@@ -49,24 +49,30 @@ Two things worth noticing once you've seen all three:
 
 ## What's in each folder
 
-- **[`level1-analyst/`](level1-analyst/)** — `candidates.xlsx` (a pipeline
-  export) and `analysis.md` (the written analysis an LLM gives back).
-  Nothing executes.
+- **[`level1-analyst/`](level1-analyst/)** — the whole level is
+  input → prompt → output: `candidates.xlsx` (the pipeline export),
+  `prompt.md` (the plain-English ask), and `analysis.md` (the written
+  analysis the model gives back). Nothing executes.
 - **[`level2-author/`](level2-author/)** — `merge.py`: reads the shared
-  `jobs.csv`, `candidates.csv`, and `enrichment.db`, joins them, and writes
+  `jobs.csv`, `candidates.csv`, and `enrichment.db`, joins them, folds in
+  the same pipeline analysis Level 1 did by hand, and writes
   `merged.html` + `merged.xlsx`. A tool the human still has to run.
-- **[`level3-agent/`](level3-agent/)** — `bonus-direct-wsdl.md`: the same
-  merged outcome as Level 2, reached with the human removed from the loop
-  — the agent pulls the data itself via a direct WSDL/SOAP call instead of
-  waiting on an export.
+- **[`level3-agent/`](level3-agent/)** — `workspace/` (the scoped
+  directory a Level 3 agent works inside) and `bonus-direct-wsdl.md`: the
+  same merged outcome as Level 2, reached with the human removed from the
+  loop — the agent runs the merge itself, and can go one step further via
+  a direct Web Services Description Language (WSDL) / Simple Object
+  Access Protocol (SOAP) call instead of waiting on an export.
 
 ## Shared data
 
 `jobs.csv`, `candidates.csv`, and `enrichment.db` live at the repo root
 and are used by every level. The two CSVs stand in for reports a
 recruiting team **exports** on some cadence. `enrichment.db` stands in for
-a **live system** (a generic ATS/CRM/HRIS) — something an agent could
-query directly instead of waiting for the next export.
+a **live system** — a generic Applicant Tracking System (ATS), Customer
+Relationship Management (CRM) system, or Human Resources Information
+System (HRIS) — something an agent could query directly instead of
+waiting for the next export.
 
 The join between `candidates.csv` and `enrichment.db` is deliberately
 imperfect: a plain exact-match on name, on purpose. A few candidates and
@@ -92,16 +98,21 @@ python level2-author/merge.py
 `jobs.csv`, `candidates.csv`, and `enrichment.db` are already committed,
 so this is all `merge.py` needs. Expected output: a reconciliation summary
 printed to the console (19 of 25 candidates matched to a profile, 6
-unmatched, 5 profiles unused), followed by the full merged table, then
-`merged.html` and `merged.xlsx` written into `level2-author/` (not
-committed — they're build artifacts, regenerated each run).
+unmatched, 5 profiles unused), the full merged table, then the same
+pipeline analysis Level 1 wrote by hand (stage counts, the one req marked
+"On Hold" that still has candidates moving through it) computed
+automatically — followed by `merged.html` and `merged.xlsx` written into
+`level2-author/` (not committed — they're build artifacts, regenerated
+each run).
 
 ## The bonus: skipping the export entirely
 
 Levels 1 and 2 both still start from an export or a directly-queryable
 replica. The deeper agentic-development win is going one step further: an
 agent that reads a source system's WSDL and calls its SOAP endpoint
-directly, with no export step at all. See
+directly, with no export step at all — including skipping the step of
+building a custom analytics/reporting extract inside the ATS's own admin
+console, which is still a human-maintained export either way. See
 [`level3-agent/bonus-direct-wsdl.md`](level3-agent/bonus-direct-wsdl.md) —
 and the closing slide of `presentation.html` for why that's also exactly
 the kind of data-movement pattern that needs a governance eye on it.

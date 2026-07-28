@@ -4,14 +4,47 @@ The model writes code. The human is still the runtime.
 
 - **`merge.py`** — reads the shared `jobs.csv`, `candidates.csv`, and
   `enrichment.db` (one directory up), joins all three, prints a
-  reconciliation summary, and writes the merged view out as both
-  `merged.html` and `merged.xlsx`.
+  reconciliation summary, folds in the same pipeline analysis Level 1 did
+  by hand, and writes both `merged.html` and `merged.xlsx`.
 
 This came from a spec like: *"Take these two CSVs, merge them with the
-SQL data, and produce an HTML and an Excel file."* The same chat window
-and the same model that gave you the Level 1 analysis — asked for a tool
-instead of an answer. See the root [README](../README.md) and
-[`presentation.html`](../presentation.html) for the exact spec.
+SQL (Structured Query Language) data, and produce an HTML and an Excel
+file."* The same chat window and the same model that gave you the Level 1
+analysis — asked for a tool instead of an answer. See the root
+[README](../README.md) and [`presentation.html`](../presentation.html)
+for the exact spec.
+
+## Level 1's capability, now inside the automation
+
+Level 1's whole job was reasoning over one table by hand: how are
+candidates distributed across stages, and is anything inconsistent.
+`merge.py` doesn't drop that when it starts joining sources — it absorbs
+it. The same stage-count and on-hold-bottleneck check from
+[`analysis.md`](../level1-analyst/analysis.md) now runs as one more step
+in the script (step 6b), computed with pandas instead of asked for in a
+separate chat message, and written into both output files alongside the
+merged view. Nothing about the *reasoning* changed — only who's running it,
+and how often.
+
+## Why pandas is doing more than "load two CSVs"
+
+The read/query/merge steps are the small part. What makes this a
+reasonable tool to hand off, instead of a one-off script, is what the same
+library does in three more lines each:
+
+- **One API, many shapes.** `pd.read_csv`, `pd.read_sql_query`, and
+  `pd.read_excel` all return the same kind of object — a DataFrame — so a
+  flat file and a live database end up interchangeable once they're loaded.
+- **`.merge()` is a real relational join** (inner/left/right/outer) without
+  writing SQL by hand once the data's in memory — see step 3 and step 4.
+- **Boolean masks filter thousands of rows as fast as one.** `stage.isin([...])`
+  or `status == "On Hold"` (step 5, step 6b) replace a manual loop-and-check
+  entirely.
+- **`.groupby()` turns a tally into one line.** The stage-count breakdown
+  that used to be a sentence in `analysis.md` is `value_counts()` here.
+- **Output format is a parameter, not a rewrite.** The same DataFrame
+  writes to `.to_csv()`, `.to_html()`, `.to_excel()`, or `.to_sql()` —
+  swapping formats doesn't touch the logic above it.
 
 ## Run it
 
