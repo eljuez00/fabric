@@ -7,9 +7,10 @@ Python actually do for us?" - with something closer to what an Applicant
 Tracking System (ATS) administrator builds in practice: not another join,
 but a small business-rules engine over the data.
 
-Both are additive: they read the shared `jobs.csv`/`candidates.csv` at
-the repo root, plus a small synthetic input file local to this folder,
-and don't touch or depend on `merge.py`'s output.
+Both are additive: they read the shared `jobs.csv`/`candidates.csv`/
+`enrichment.db` at the repo root, plus - for the recruiter engine only -
+one small synthetic input file local to this folder. Neither touches or
+depends on `merge.py`'s output.
 
 ## `recruiter_assignment_engine.py`
 
@@ -20,29 +21,32 @@ over `recruiter_assignments.csv` (22 historical filled reqs, synthetic):
 exact department-and-location match first, then department-only, then
 location-only, then whoever's historical load is lightest. Run against
 the 7 currently open reqs in the shared `jobs.csv`, it recommends a
-recruiter for every one of them and shows which rule fired for each -
-see [`recommendation output`](#what-real-output-looks-like) below.
+recruiter for every one of them and shows which rule fired for each.
 
-## `stage_escalation_report.py`
+## `fuzzy_match_suggestions.py`
 
-The motivating case: a candidate has been sitting in Screen for three
-weeks and nobody flagged it. This script applies a Service Level
-Agreement (SLA) per stage (Applied: 5 days, Screen: 7, Interview: 10,
-Offer: 3) against `stage_aging.csv` (synthetic days-in-stage, standing in
-for a real timestamp an ATS would expose) and ranks everyone over their
-limit by how far over they are - not just who's been in the pipeline
-longest overall.
+The motivating case is the one this whole repo is already built around:
+`merge.py`'s exact-name join leaves 6 candidates unmatched and 5 profiles
+unused, on purpose, rather than guess at a join. This script picks that
+gap back up and does what a human would do next by hand - eyeball the
+leftovers for a likely typo - using `difflib.SequenceMatcher` (Python's
+standard library, no new dependency) to score every unmatched candidate
+against every unused profile. It needs no new data: same two shared
+sources as `merge.py`. Anything above a similarity threshold gets
+surfaced as a suggestion; nothing is merged automatically - a human still
+confirms, the same judgment call the reconciliation summary already
+refused to make on its own.
 
 ## Run them
 
 ```bash
 pip install pandas
 python recruiter_assignment_engine.py
-python stage_escalation_report.py
+python fuzzy_match_suggestions.py
 ```
 
 Each prints its findings and writes a CSV (`recruiter_recommendations.csv`,
-`escalation_report.csv`) - both gitignored, regenerated every run.
+`fuzzy_match_suggestions.csv`) - both gitignored, regenerated every run.
 
 ## What real output looks like
 
@@ -50,7 +54,9 @@ Recruiter engine, run against the real data in this repo: 5 of 7 open
 reqs matched on department + location, 1 fell back to department-only,
 1 to location-only - the full fallback rule never had to fire this time.
 
-Escalation report: 7 of 25 candidates are over their stage's SLA, topped
-by a Customer Success candidate 4 days past the Applied limit and a
-Sales candidate 4 days past the Screen limit - spread across seven
-different departments, meaning this isn't one team's problem.
+Fuzzy match suggestions: of the 6 unmatched candidates, 3 score
+0.78-0.84 against an unused profile - `Jon Smith` / `Jonathan Smith`,
+`Cate Nguyen` / `Catherine Nguyen`, `Rob Diaz` / `Robert Diaz` - a clean
+gap above the closest false lead, which tops out at 0.44. The other 3
+unmatched candidates score below the threshold against everything:
+genuinely no profile on file, not just an unlucky spelling.

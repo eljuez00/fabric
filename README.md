@@ -48,8 +48,8 @@ unused) and the merged table, then writes `merged.html` + `merged.xlsx`
 into `level2-author/` (gitignored — regenerated each run).
 
 For more than a join, see [`level2-author/examples/`](level2-author/examples/) —
-a recruiter assignment rules engine and an SLA stage-escalation report,
-both real runs against this repo's data.
+a recruiter assignment rules engine and a fuzzy-match suggester for the
+reconciliation gap above, both real runs against this repo's data.
 
 ## Bonus
 

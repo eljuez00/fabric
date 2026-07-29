@@ -30,4 +30,4 @@ level2-author/merged.csv
 
 # The Level 2 example scripts regenerate these every run too.
 level2-author/examples/recruiter_recommendations.csv
-level2-author/examples/escalation_report.csv
+level2-author/examples/fuzzy_match_suggestions.csv

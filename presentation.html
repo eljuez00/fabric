@@ -310,40 +310,6 @@
     border-bottom: 1px solid var(--border);
   }
 
-  .table-wrap {
-    overflow: auto;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    max-height: 56vh;
-  }
-
-  table.talent-table {
-    border-collapse: collapse;
-    width: 100%;
-    font-family: var(--mono);
-    font-size: 0.74rem;
-    white-space: nowrap;
-  }
-
-  table.talent-table th, table.talent-table td {
-    padding: 0.4em 0.7em;
-    border-bottom: 1px solid var(--border);
-    text-align: left;
-  }
-
-  table.talent-table thead th {
-    position: sticky;
-    top: 0;
-    background: var(--bg-raised);
-    color: var(--l2);
-    z-index: 1;
-  }
-
-  table.talent-table tr.unmatched td { color: var(--red); }
-  table.talent-table tr.unmatched td:nth-child(9),
-  table.talent-table tr.unmatched td:nth-child(10),
-  table.talent-table tr.unmatched td:nth-child(11) { opacity: 0.55; }
-
   .mismatch-list {
     font-family: var(--mono);
     font-size: 0.88rem;
@@ -474,7 +440,6 @@
     <a href="https://claude.ai/code" target="_blank" rel="noopener">Claude Code</a> ·
     <a href="https://chatgpt.com/" target="_blank" rel="noopener">ChatGPT</a>
   </div>
-  <div class="footer-note">Synthetic data only — built to illustrate a concept for a talk.</div>
 </section>
 
 <section class="slide" id="s2">
@@ -759,27 +724,27 @@ with pd.ExcelWriter(HERE / "merged.xlsx") as writer:
       </div>
     </div>
     <div>
-      <h3>Stage escalation report</h3>
+      <h3>Fuzzy match suggester</h3>
       <p style="color:var(--fg-dim); margin:0 0 0.6em 0;">
-        A candidate sits in Screen for three weeks and nobody notices. A
-        Service Level Agreement (SLA) per stage, checked automatically,
-        ranks everyone over their limit by how far over — not just who's
-        been in the pipeline longest overall.
+        Picks up exactly where <code>merge.py</code>'s reconciliation
+        stopped — 6 unmatched candidates, 5 unused profiles — and scores
+        every pair for a likely typo, using nothing but the standard
+        library. Nothing is merged automatically; a human still confirms.
       </p>
-      <pre><code>SLA_DAYS = {
-    "Applied": 5, "Screen": 7,
-    "Interview": 10, "Offer": 3,
-}
+      <pre><code>from difflib import SequenceMatcher
 
-merged["sla_days"] = merged["stage"].map(SLA_DAYS)
-merged["days_over_sla"] = (
-    merged["days_in_current_stage"] - merged["sla_days"]
-)
-overdue = merged[merged["days_over_sla"] > 0] \
-    .sort_values("days_over_sla", ascending=False)</code></pre>
+def best_match(name):
+    scored = [
+        (row["name"],
+         SequenceMatcher(None, name.lower(),
+                          row["name"].lower()).ratio())
+        for _, row in unused_profiles.iterrows()
+    ]
+    scored.sort(key=lambda pair: pair[1], reverse=True)
+    return scored[0]  # (closest profile, similarity score)</code></pre>
       <div class="stat-row" style="margin-top:0.8rem;">
-        <div class="stat warn"><div class="n">7/25</div><div class="label">candidates over SLA</div></div>
-        <div class="stat"><div class="n" style="color:var(--l3)">7</div><div class="label">departments represented</div></div>
+        <div class="stat"><div class="n" style="color:var(--l2)">3/6</div><div class="label">score 0.78&ndash;0.84, above threshold</div></div>
+        <div class="stat"><div class="n" style="color:var(--l3)">0.44</div><div class="label">closest false lead &mdash; a clean gap</div></div>
       </div>
     </div>
   </div>
@@ -893,346 +858,10 @@ overdue = merged[merged["days_over_sla"] > 0] \
   <p class="lede" style="margin:0.8rem 0">
     The join isn't automatic. An exact-name match won't catch those three
     pairs, and it shouldn't guess — that trade-off is a judgment call the
-    human makes, not the agent. Rows in red below have no matching profile.
+    human makes, not the agent. The full 25-row merged view is a real run
+    of <code>merge.py</code>, written to <code>merged.html</code> and
+    <code>merged.xlsx</code> in the repo.
   </p>
-  <div class="table-wrap">
-    <table class="talent-table">
-      <thead>
-        <tr>
-          <th>candidate_id</th><th>full_name</th><th>email</th><th>job_id</th>
-          <th>job_title</th><th>department</th><th>location</th><th>stage</th>
-          <th>current_title</th><th>current_company</th><th>years_experience</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>C001</td>
-          <td>Avery Example</td>
-          <td>avery.example@example.com</td>
-          <td>J001</td>
-          <td>Software Engineer</td>
-          <td>Engineering</td>
-          <td>Remote</td>
-          <td>Applied</td>
-          <td>Software Engineer II</td>
-          <td>Acme Corp</td>
-          <td>4.0</td>
-        </tr>
-        <tr>
-          <td>C002</td>
-          <td>Jordan Sample</td>
-          <td>jordan.sample@example.com</td>
-          <td>J001</td>
-          <td>Software Engineer</td>
-          <td>Engineering</td>
-          <td>Remote</td>
-          <td>Screen</td>
-          <td>Senior Product Analyst</td>
-          <td>Globex</td>
-          <td>6.0</td>
-        </tr>
-        <tr class="unmatched">
-          <td>C003</td>
-          <td>Jon Smith</td>
-          <td>jon.smith@example.com</td>
-          <td>J001</td>
-          <td>Software Engineer</td>
-          <td>Engineering</td>
-          <td>Remote</td>
-          <td>Interview</td>
-          <td>&ndash;</td>
-          <td>&ndash;</td>
-          <td>&ndash;</td>
-        </tr>
-        <tr>
-          <td>C004</td>
-          <td>Casey Test</td>
-          <td>casey.test@example.com</td>
-          <td>J002</td>
-          <td>Product Manager</td>
-          <td>Product</td>
-          <td>Austin, TX</td>
-          <td>Applied</td>
-          <td>Product Manager</td>
-          <td>Acme Corp</td>
-          <td>7.0</td>
-        </tr>
-        <tr>
-          <td>C005</td>
-          <td>Riley Demo</td>
-          <td>riley.demo@example.com</td>
-          <td>J002</td>
-          <td>Product Manager</td>
-          <td>Product</td>
-          <td>Austin, TX</td>
-          <td>Screen</td>
-          <td>Associate Product Manager</td>
-          <td>Globex</td>
-          <td>3.0</td>
-        </tr>
-        <tr>
-          <td>C006</td>
-          <td>Morgan Fake</td>
-          <td>morgan.fake@example.com</td>
-          <td>J002</td>
-          <td>Product Manager</td>
-          <td>Product</td>
-          <td>Austin, TX</td>
-          <td>Offer</td>
-          <td>Senior Product Manager</td>
-          <td>Initech</td>
-          <td>8.0</td>
-        </tr>
-        <tr class="unmatched">
-          <td>C007</td>
-          <td>Cate Nguyen</td>
-          <td>cate.nguyen@example.com</td>
-          <td>J003</td>
-          <td>Data Analyst</td>
-          <td>Analytics</td>
-          <td>Remote</td>
-          <td>Applied</td>
-          <td>&ndash;</td>
-          <td>&ndash;</td>
-          <td>&ndash;</td>
-        </tr>
-        <tr>
-          <td>C008</td>
-          <td>Drew Placeholder</td>
-          <td>drew.placeholder@example.com</td>
-          <td>J003</td>
-          <td>Data Analyst</td>
-          <td>Analytics</td>
-          <td>Remote</td>
-          <td>Screen</td>
-          <td>Business Intelligence Analyst</td>
-          <td>Globex</td>
-          <td>5.0</td>
-        </tr>
-        <tr>
-          <td>C009</td>
-          <td>Sam Synthetic</td>
-          <td>sam.synthetic@example.com</td>
-          <td>J003</td>
-          <td>Data Analyst</td>
-          <td>Analytics</td>
-          <td>Remote</td>
-          <td>Interview</td>
-          <td>Data Analyst II</td>
-          <td>Initech</td>
-          <td>3.0</td>
-        </tr>
-        <tr>
-          <td>C010</td>
-          <td>Taylor Mock</td>
-          <td>taylor.mock@example.com</td>
-          <td>J004</td>
-          <td>Recruiter</td>
-          <td>People</td>
-          <td>Chicago, IL</td>
-          <td>Applied</td>
-          <td>Technical Recruiter</td>
-          <td>Acme Corp</td>
-          <td>6.0</td>
-        </tr>
-        <tr class="unmatched">
-          <td>C011</td>
-          <td>Rob Diaz</td>
-          <td>rob.diaz@example.com</td>
-          <td>J004</td>
-          <td>Recruiter</td>
-          <td>People</td>
-          <td>Chicago, IL</td>
-          <td>Screen</td>
-          <td>&ndash;</td>
-          <td>&ndash;</td>
-          <td>&ndash;</td>
-        </tr>
-        <tr>
-          <td>C012</td>
-          <td>Jamie Sample</td>
-          <td>jamie.sample@example.com</td>
-          <td>J004</td>
-          <td>Recruiter</td>
-          <td>People</td>
-          <td>Chicago, IL</td>
-          <td>Applied</td>
-          <td>Recruiting Coordinator</td>
-          <td>Initech</td>
-          <td>2.0</td>
-        </tr>
-        <tr>
-          <td>C013</td>
-          <td>Quinn Example</td>
-          <td>quinn.example@example.com</td>
-          <td>J005</td>
-          <td>UX Designer</td>
-          <td>Design</td>
-          <td>Remote</td>
-          <td>Interview</td>
-          <td>Senior UX Designer</td>
-          <td>Acme Corp</td>
-          <td>7.0</td>
-        </tr>
-        <tr>
-          <td>C014</td>
-          <td>Alex Test</td>
-          <td>alex.test@example.com</td>
-          <td>J005</td>
-          <td>UX Designer</td>
-          <td>Design</td>
-          <td>Remote</td>
-          <td>Applied</td>
-          <td>UX Designer</td>
-          <td>Globex</td>
-          <td>3.0</td>
-        </tr>
-        <tr>
-          <td>C015</td>
-          <td>Bailey Demo</td>
-          <td>bailey.demo@example.com</td>
-          <td>J005</td>
-          <td>UX Designer</td>
-          <td>Design</td>
-          <td>Remote</td>
-          <td>Offer</td>
-          <td>Product Designer</td>
-          <td>Initech</td>
-          <td>5.0</td>
-        </tr>
-        <tr>
-          <td>C016</td>
-          <td>Skyler Fake</td>
-          <td>skyler.fake@example.com</td>
-          <td>J006</td>
-          <td>Sales Development Rep</td>
-          <td>Sales</td>
-          <td>New York, NY</td>
-          <td>Applied</td>
-          <td>Sales Development Rep</td>
-          <td>Acme Corp</td>
-          <td>2.0</td>
-        </tr>
-        <tr>
-          <td>C017</td>
-          <td>Reese Placeholder</td>
-          <td>reese.placeholder@example.com</td>
-          <td>J006</td>
-          <td>Sales Development Rep</td>
-          <td>Sales</td>
-          <td>New York, NY</td>
-          <td>Screen</td>
-          <td>Account Executive</td>
-          <td>Globex</td>
-          <td>4.0</td>
-        </tr>
-        <tr>
-          <td>C018</td>
-          <td>Harper Synthetic</td>
-          <td>harper.synthetic@example.com</td>
-          <td>J006</td>
-          <td>Sales Development Rep</td>
-          <td>Sales</td>
-          <td>New York, NY</td>
-          <td>Applied</td>
-          <td>Sales Development Rep</td>
-          <td>Initech</td>
-          <td>3.0</td>
-        </tr>
-        <tr>
-          <td>C019</td>
-          <td>Emerson Mock</td>
-          <td>emerson.mock@example.com</td>
-          <td>J007</td>
-          <td>DevOps Engineer</td>
-          <td>Engineering</td>
-          <td>Remote</td>
-          <td>Screen</td>
-          <td>DevOps Engineer</td>
-          <td>Initech</td>
-          <td>6.0</td>
-        </tr>
-        <tr>
-          <td>C020</td>
-          <td>Finley Sample</td>
-          <td>finley.sample@example.com</td>
-          <td>J007</td>
-          <td>DevOps Engineer</td>
-          <td>Engineering</td>
-          <td>Remote</td>
-          <td>Interview</td>
-          <td>Site Reliability Engineer</td>
-          <td>Acme Corp</td>
-          <td>5.0</td>
-        </tr>
-        <tr>
-          <td>C021</td>
-          <td>Dana Example</td>
-          <td>dana.example@example.com</td>
-          <td>J008</td>
-          <td>Customer Success Manager</td>
-          <td>Customer Success</td>
-          <td>Austin, TX</td>
-          <td>Applied</td>
-          <td>Customer Success Manager</td>
-          <td>Acme Corp</td>
-          <td>5.0</td>
-        </tr>
-        <tr>
-          <td>C022</td>
-          <td>Micah Test</td>
-          <td>micah.test@example.com</td>
-          <td>J008</td>
-          <td>Customer Success Manager</td>
-          <td>Customer Success</td>
-          <td>Austin, TX</td>
-          <td>Screen</td>
-          <td>Customer Success Associate</td>
-          <td>Globex</td>
-          <td>2.0</td>
-        </tr>
-        <tr class="unmatched">
-          <td>C023</td>
-          <td>Jess Nolan</td>
-          <td>jess.nolan@example.com</td>
-          <td>J008</td>
-          <td>Customer Success Manager</td>
-          <td>Customer Success</td>
-          <td>Austin, TX</td>
-          <td>Applied</td>
-          <td>&ndash;</td>
-          <td>&ndash;</td>
-          <td>&ndash;</td>
-        </tr>
-        <tr class="unmatched">
-          <td>C024</td>
-          <td>Toby Grant</td>
-          <td>toby.grant@example.com</td>
-          <td>J002</td>
-          <td>Product Manager</td>
-          <td>Product</td>
-          <td>Austin, TX</td>
-          <td>Applied</td>
-          <td>&ndash;</td>
-          <td>&ndash;</td>
-          <td>&ndash;</td>
-        </tr>
-        <tr class="unmatched">
-          <td>C025</td>
-          <td>Wynn Osei</td>
-          <td>wynn.osei@example.com</td>
-          <td>J003</td>
-          <td>Data Analyst</td>
-          <td>Analytics</td>
-          <td>Remote</td>
-          <td>Screen</td>
-          <td>&ndash;</td>
-          <td>&ndash;</td>
-          <td>&ndash;</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
 </section>
 
 <section class="slide" id="s8">

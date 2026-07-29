@@ -69,12 +69,14 @@ Python is good for here. **[`examples/`](examples/)** has two more, aimed
 at the kind of problem an Applicant Tracking System (ATS) administrator
 actually deals with: a **recruiter assignment engine** (a rule cascade
 over historical filled reqs that recommends who should staff each open
-one) and a **stage escalation report** (a Service Level Agreement, or
-SLA, per pipeline stage, flagging who's overdue and by how much). Neither
-is machine learning — both are the same "read data, apply deterministic
-rules, write output" shape as `merge.py`, just pointed at a different
-question. See [`examples/README.md`](examples/README.md) for both, with
-real output from a real run.
+one) and a **fuzzy match suggester** that picks up exactly where
+`merge.py`'s reconciliation leaves off — scoring the unmatched candidates
+against the unused profiles for a likely typo, without auto-merging
+anything. Neither is machine learning — both are the same "read data,
+apply deterministic rules, write output" shape as `merge.py`, just
+pointed at a different question. See
+[`examples/README.md`](examples/README.md) for both, with real output
+from a real run.
 
 ## Run it
 
