@@ -310,17 +310,6 @@
     border-bottom: 1px solid var(--border);
   }
 
-  .mismatch-list {
-    font-family: var(--mono);
-    font-size: 0.88rem;
-    color: var(--fg-dim);
-    margin: 0.6rem 0 0 0;
-  }
-
-  .mismatch-list .pair { display: block; padding: 0.2em 0; }
-  .mismatch-list .pair .a { color: var(--red); }
-  .mismatch-list .pair .b { color: var(--l3); }
-
   .callout {
     border: 1px solid var(--l3);
     background: var(--bg-raised);
@@ -419,7 +408,7 @@
 <body>
 
 <nav id="progress" aria-label="Slide navigation"></nav>
-<div class="slide-index" id="slide-index">1 / 9</div>
+<div class="slide-index" id="slide-index">1 / 8</div>
 <div class="hint">↑ ↓ / space / click dots to navigate</div>
 
 <section class="slide" id="s1">
@@ -840,28 +829,6 @@ def best_match(name):
       </div>
     </div>
   </div>
-</section>
-
-<section class="slide" id="s7">
-  <div class="kicker">The payoff</div>
-  <h2>One merged talent view — and the reconciliation reality</h2>
-  <div class="stat-row">
-    <div class="stat"><div class="n" style="color:var(--l2)">19</div><div class="label">matched to a profile</div></div>
-    <div class="stat warn"><div class="n">6</div><div class="label">no matching profile</div></div>
-    <div class="stat"><div class="n" style="color:var(--l3)">5</div><div class="label">profiles unused</div></div>
-  </div>
-  <div class="mismatch-list">
-    <span class="pair"><span class="a">Jon Smith</span> (candidate) vs <span class="b">Jonathan Smith</span> (profile)</span>
-    <span class="pair"><span class="a">Cate Nguyen</span> (candidate) vs <span class="b">Catherine Nguyen</span> (profile)</span>
-    <span class="pair"><span class="a">Rob Diaz</span> (candidate) vs <span class="b">Robert Diaz</span> (profile)</span>
-  </div>
-  <p class="lede" style="margin:0.8rem 0">
-    The join isn't automatic. An exact-name match won't catch those three
-    pairs, and it shouldn't guess — that trade-off is a judgment call the
-    human makes, not the agent. The full 25-row merged view is a real run
-    of <code>merge.py</code>, written to <code>merged.html</code> and
-    <code>merged.xlsx</code> in the repo.
-  </p>
 </section>
 
 <section class="slide" id="s8">
